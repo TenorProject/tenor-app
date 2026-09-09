@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { SignedQuote, QuotePayload } from "@/types/quote-api";
+import type { QuotePayload } from "@/types/quote-api";
 import type { Hex } from "viem";
-
-const quotes = new Map<string, SignedQuote>();
+import {
+  insertQuote,
+  getAllQuotes,
+  getQuotesByBorrower,
+  getQuotesByLender,
+} from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as {
@@ -19,33 +23,23 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const entry: SignedQuote = {
-    quote,
-    signature,
-    createdAt: Date.now(),
-  };
-
-  quotes.set(quote.requestId, entry);
+  insertQuote(quote, signature);
 
   return NextResponse.json({ requestId: quote.requestId }, { status: 201 });
 }
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const borrower = searchParams.get("borrower")?.toLowerCase();
-  const lender = searchParams.get("lender")?.toLowerCase();
+  const borrower = searchParams.get("borrower");
+  const lender = searchParams.get("lender");
 
-  let results = Array.from(quotes.values());
-
+  let results;
   if (borrower) {
-    results = results.filter(
-      (q) => q.quote.borrower.toLowerCase() === borrower,
-    );
-  }
-  if (lender) {
-    results = results.filter(
-      (q) => q.quote.lender.toLowerCase() === lender,
-    );
+    results = getQuotesByBorrower(borrower);
+  } else if (lender) {
+    results = getQuotesByLender(lender);
+  } else {
+    results = getAllQuotes();
   }
 
   return NextResponse.json(results);
