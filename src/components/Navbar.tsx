@@ -8,6 +8,8 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/open-repo", label: "Open Repo" },
   { href: "/sign-quote", label: "Sign Quote" },
+  { href: "/compliance-test", label: "Compliance" },
+  { href: "/audit", label: "Audit Trail" },
   { href: "/setup", label: "Setup" },
 ] as const;
 
