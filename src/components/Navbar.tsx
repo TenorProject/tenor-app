@@ -19,8 +19,9 @@ export function Navbar() {
   return (
     <nav className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950 px-6 py-3">
       <div className="flex items-center gap-8">
-        <Link href="/" className="text-lg font-bold text-white tracking-tight">
-          Tenor
+        <Link href="/" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Tenor" className="h-6 w-auto" />
         </Link>
         <div className="flex items-center gap-1">
           {NAV_LINKS.map(({ href, label }) => {
