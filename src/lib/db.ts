@@ -3,7 +3,7 @@ import path from "path";
 import type { SignedQuote, QuotePayload } from "@/types/quote-api";
 import type { RepoFromEvent } from "@/types/repo-api";
 
-const dbPath = path.join(process.cwd(), "tenor.db");
+const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), "tenor.db");
 const db = new Database(dbPath);
 
 db.pragma("journal_mode = WAL");
