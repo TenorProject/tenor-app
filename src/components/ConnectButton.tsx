@@ -33,15 +33,15 @@ export function ConnectButton() {
       <div className="relative" ref={ref}>
         <button
           onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-700 transition-colors"
+          className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-300 hover:border-zinc-700 hover:text-white transition-colors"
         >
-          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-          <span className="font-mono">{truncated}</span>
-          {bal && <span className="text-zinc-400">({bal})</span>}
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <span className="font-mono text-xs">{truncated}</span>
+          {bal && <span className="text-zinc-500 text-xs">({bal})</span>}
         </button>
 
         {open && (
-          <div className="absolute right-0 mt-2 w-48 rounded-lg border border-zinc-700 bg-zinc-900 p-1 shadow-xl z-50">
+          <div className="absolute right-0 mt-2 w-48 rounded-lg border border-zinc-800 bg-zinc-900 p-1 shadow-xl z-50">
             <button
               onClick={() => {
                 disconnect();
@@ -67,7 +67,7 @@ export function ConnectButton() {
     return (
       <button
         onClick={() => connect({ connector: unique[0] })}
-        className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition-colors"
+        className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 transition-all"
       >
         Connect Wallet
       </button>
@@ -78,13 +78,13 @@ export function ConnectButton() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 transition-colors"
+        className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 transition-all"
       >
         Connect Wallet
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-56 rounded-lg border border-zinc-700 bg-zinc-900 p-1 shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-56 rounded-lg border border-zinc-800 bg-zinc-900 p-1 shadow-xl z-50">
           {unique.map((connector) => (
             <button
               key={connector.uid}
@@ -92,7 +92,7 @@ export function ConnectButton() {
                 connect({ connector });
                 setOpen(false);
               }}
-              className="w-full rounded-md px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
+              className="w-full rounded-md px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
             >
               {connector.name}
             </button>

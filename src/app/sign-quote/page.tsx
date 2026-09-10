@@ -59,15 +59,17 @@ function InputField({
   placeholder?: string;
 }) {
   return (
-    <label className="text-sm text-zinc-400">
-      {label}
+    <label className="block text-sm text-zinc-400">
+      <span className="mb-1.5 block text-xs font-medium text-zinc-500 uppercase tracking-wide">
+        {label}
+      </span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         readOnly={readOnly}
         placeholder={placeholder}
-        className={`mt-1 block w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none ${readOnly ? "opacity-60 cursor-not-allowed" : ""}`}
+        className={`block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none transition-colors ${readOnly ? "opacity-50 cursor-not-allowed" : "hover:border-zinc-700"}`}
       />
     </label>
   );
@@ -108,7 +110,15 @@ export default function SignQuotePage() {
   if (!isConnected || !address) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-zinc-400">Connect your wallet to sign a quote.</p>
+        <div className="text-center space-y-2">
+          <div className="text-zinc-600 text-4xl mb-4">
+            <svg viewBox="0 0 24 24" className="h-10 w-10 mx-auto" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M3 17c2-4 4-8 6-4s4 8 6 0 3-6 6-2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M3 21h18" strokeLinecap="round" />
+            </svg>
+          </div>
+          <p className="text-zinc-400">Connect your wallet to sign a quote.</p>
+        </div>
       </div>
     );
   }
@@ -184,59 +194,87 @@ export default function SignQuotePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 p-8">
-      <h1 className="text-2xl font-bold text-white">Sign Quote</h1>
-      <p className="text-sm text-zinc-400">
-        Fill in the repo terms and sign with EIP-712. Your signature commits you as the lender.
-      </p>
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-10 sm:px-8">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Sign Quote</h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          Define the repo terms and commit with your EIP-712 signature as the lender.
+        </p>
+      </div>
 
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-6 space-y-4">
-        <InputField label="Request ID" value={requestId} onChange={() => {}} readOnly />
-        <InputField label="Lender (you)" value={address} onChange={() => {}} readOnly />
-        <InputField label="Borrower" value={borrower} onChange={setBorrower} placeholder="0x..." />
-
-        <div className="grid grid-cols-2 gap-4">
-          <InputField label="Security Token" value={security} onChange={setSecurity} placeholder="0x..." />
-          <InputField label="Cash Token (USDC)" value={cash} onChange={setCash} placeholder="0x..." />
+      <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/30 p-6 sm:p-8 space-y-6">
+        {/* Identities */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Parties</h3>
+          <InputField label="Request ID" value={requestId} onChange={() => {}} readOnly />
+          <InputField label="Lender (you)" value={address} onChange={() => {}} readOnly />
+          <InputField label="Borrower" value={borrower} onChange={setBorrower} placeholder="0x..." />
         </div>
 
-        <InputField label="Partition (bytes32)" value={partition} onChange={setPartition} />
+        <div className="border-t border-zinc-800/40" />
 
-        <div className="grid grid-cols-2 gap-4">
-          <InputField label="Collateral Qty (raw units)" value={collateralQty} onChange={setCollateralQty} placeholder="e.g. 1000" />
-          <InputField label="Haircut (bps, e.g. 500 = 5%)" value={haircutBps} onChange={setHaircutBps} placeholder="500" />
+        {/* Tokens */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Tokens</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label="Security Token" value={security} onChange={setSecurity} placeholder="0x..." />
+            <InputField label="Cash Token (USDC)" value={cash} onChange={setCash} placeholder="0x..." />
+          </div>
+          <InputField label="Partition (bytes32)" value={partition} onChange={setPartition} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <InputField label="Principal (USDC)" value={principal} onChange={setPrincipal} placeholder="10000" />
-          <InputField label="Repurchase (USDC)" value={repurchase} onChange={setRepurchase} placeholder="10050" />
+        <div className="border-t border-zinc-800/40" />
+
+        {/* Terms */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Terms</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label="Collateral Qty (raw units)" value={collateralQty} onChange={setCollateralQty} placeholder="e.g. 1000" />
+            <InputField label="Haircut (bps, e.g. 500 = 5%)" value={haircutBps} onChange={setHaircutBps} placeholder="500" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label="Principal (USDC)" value={principal} onChange={setPrincipal} placeholder="10000" />
+            <InputField label="Repurchase (USDC)" value={repurchase} onChange={setRepurchase} placeholder="10050" />
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <InputField label="Maturity" value={maturity} onChange={setMaturity} type="datetime-local" />
-          <InputField label="Quote Expiry" value={quoteExpiry} onChange={setQuoteExpiry} type="datetime-local" />
+        <div className="border-t border-zinc-800/40" />
+
+        {/* Schedule */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Schedule</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <InputField label="Maturity" value={maturity} onChange={setMaturity} type="datetime-local" />
+            <InputField label="Quote Expiry" value={quoteExpiry} onChange={setQuoteExpiry} type="datetime-local" />
+          </div>
         </div>
 
-        <button
-          onClick={handleSign}
-          disabled={status === "signing" || status === "posting"}
-          className="mt-2 rounded-md bg-emerald-600 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {status === "signing"
-            ? "Waiting for signature..."
-            : status === "posting"
-              ? "Saving quote..."
-              : "Sign Quote"}
-        </button>
+        <div className="pt-2">
+          <button
+            onClick={handleSign}
+            disabled={status === "signing" || status === "posting"}
+            className="rounded-md bg-white px-6 py-2.5 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {status === "signing"
+              ? "Waiting for signature..."
+              : status === "posting"
+                ? "Saving quote..."
+                : "Sign Quote"}
+          </button>
+        </div>
 
         {status === "done" && (
-          <p className="text-sm text-emerald-400">
-            Quote signed and saved. Request ID:{" "}
-            <span className="font-mono text-xs break-all">{savedRequestId}</span>
-          </p>
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+            <p className="text-sm text-emerald-400">
+              Quote signed and saved.
+            </p>
+            <p className="mt-1 font-mono text-xs text-zinc-400 break-all">{savedRequestId}</p>
+          </div>
         )}
         {status === "error" && (
-          <p className="text-sm text-red-400">{errorMsg}</p>
+          <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-3">
+            <p className="text-sm text-red-400">{errorMsg}</p>
+          </div>
         )}
       </div>
     </div>
