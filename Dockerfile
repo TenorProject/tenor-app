@@ -24,10 +24,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_PATH=/tmp/tenor.db
+ENV DATABASE_PATH=/data/tenor.db
 
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+    adduser --system --uid 1001 nextjs && \
+    mkdir -p /data && chown nextjs:nodejs /data
 
 # Copy standalone output
 COPY --from=builder /app/public ./public
