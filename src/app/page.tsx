@@ -94,7 +94,7 @@ export default function Home() {
                 {
                   step: "3",
                   title: "Settlement at maturity",
-                  desc: "At maturity the borrower repays the repurchase amount and recovers collateral. Early repayment is supported and defaults trigger liquidation.",
+                  desc: "At maturity the borrower repays the repurchase amount and recovers collateral. Early repayment is supported. If the borrower does not repay, the lender keeps the collateral.",
                 },
               ].map((item, i) => (
                 <div
@@ -126,6 +126,16 @@ export default function Home() {
           </h2>
           <div className="grid gap-6 sm:grid-cols-2">
             {[
+              {
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ),
+                title: "Scheduled unwind",
+                desc: "The closing leg is scheduled on-chain at open. At maturity, the Hedera network executes settlement automatically. No keeper, no bot, no one needs to be online.",
+              },
               {
                 icon: (
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
