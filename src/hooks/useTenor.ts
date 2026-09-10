@@ -88,7 +88,7 @@ export function useOpenRepo() {
       ...contractConfig,
       functionName: "openRepo",
       args: [quote, signature],
-      gas: 4_000_000n,
+      gas: BigInt(4_000_000),
     });
   }
 
@@ -103,7 +103,7 @@ export function useRepayEarly() {
       ...contractConfig,
       functionName: "repayEarly",
       args: [id],
-      gas: 4_000_000n,
+      gas: BigInt(4_000_000),
     });
   }
 
