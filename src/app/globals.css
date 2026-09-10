@@ -92,3 +92,60 @@ body {
 .delay-800 { animation-delay: 800ms; }
 .delay-900 { animation-delay: 900ms; }
 .delay-1000 { animation-delay: 1000ms; }
+
+/* Landing background animations */
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -50px) scale(1.05); }
+  50% { transform: translate(-20px, 20px) scale(0.95); }
+  75% { transform: translate(40px, 30px) scale(1.02); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-40px, 30px) scale(0.97); }
+  50% { transform: translate(30px, -40px) scale(1.04); }
+  75% { transform: translate(-20px, -20px) scale(1.01); }
+}
+
+@keyframes mesh-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes line-draw {
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes line-fade {
+  0%, 100% { opacity: 0.06; }
+  50% { opacity: 0.15; }
+}
+
+.animate-float-slow {
+  animation: float-slow 20s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 25s ease-in-out infinite;
+}
+
+.animate-mesh-rotate {
+  animation: mesh-rotate 60s linear infinite;
+}
+
+.animate-line-draw {
+  stroke-dasharray: 1000;
+  animation: line-draw 8s ease-out forwards, line-fade 6s ease-in-out 2s infinite;
+}
+
+.animate-line-draw-delayed {
+  stroke-dasharray: 1000;
+  animation: line-draw 8s ease-out 1s forwards, line-fade 6s ease-in-out 3s infinite;
+}
+
+.animate-line-draw-delayed-2 {
+  stroke-dasharray: 1000;
+  animation: line-draw 8s ease-out 2s forwards, line-fade 6s ease-in-out 4s infinite;
+}

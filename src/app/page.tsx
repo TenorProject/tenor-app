@@ -34,8 +34,38 @@ export default function Home() {
     <div className="flex flex-col">
       {/* Hero */}
       <section className="relative overflow-hidden px-6 pt-24 pb-32 sm:px-12 lg:px-20">
+        {/* Animated floating orbs */}
+        <div
+          className="absolute top-[-10%] left-[5%] w-[600px] h-[600px] rounded-full opacity-[0.15] blur-[120px] pointer-events-none animate-float-slow"
+          style={{ background: "radial-gradient(circle, #10b981 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-[0.1] blur-[100px] pointer-events-none animate-float-reverse"
+          style={{ background: "radial-gradient(circle, #3b82f6 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute bottom-[-20%] left-[40%] w-[450px] h-[450px] rounded-full opacity-[0.08] blur-[90px] pointer-events-none animate-float-slow"
+          style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)", animationDelay: "5s" }}
+        />
+
+        {/* Network lines SVG */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+          <line x1="10%" y1="20%" x2="50%" y2="60%" stroke="rgba(255,255,255,0.08)" strokeWidth="1" className="animate-line-draw" />
+          <line x1="80%" y1="10%" x2="40%" y2="80%" stroke="rgba(255,255,255,0.06)" strokeWidth="1" className="animate-line-draw-delayed" />
+          <line x1="60%" y1="5%" x2="90%" y2="70%" stroke="rgba(255,255,255,0.05)" strokeWidth="1" className="animate-line-draw-delayed-2" />
+          <line x1="20%" y1="80%" x2="70%" y2="30%" stroke="rgba(255,255,255,0.06)" strokeWidth="1" className="animate-line-draw-delayed" />
+          <line x1="5%" y1="50%" x2="95%" y2="45%" stroke="rgba(255,255,255,0.05)" strokeWidth="1" className="animate-line-draw-delayed-2" />
+          {/* Nodes at intersections */}
+          <circle cx="10%" cy="20%" r="3" fill="rgba(16,185,129,0.3)" className="animate-fade-in delay-500" />
+          <circle cx="50%" cy="60%" r="3" fill="rgba(16,185,129,0.25)" className="animate-fade-in delay-700" />
+          <circle cx="80%" cy="10%" r="2.5" fill="rgba(59,130,246,0.25)" className="animate-fade-in delay-600" />
+          <circle cx="40%" cy="80%" r="3" fill="rgba(59,130,246,0.2)" className="animate-fade-in delay-900" />
+          <circle cx="90%" cy="70%" r="2.5" fill="rgba(139,92,246,0.2)" className="animate-fade-in delay-800" />
+          <circle cx="70%" cy="30%" r="3" fill="rgba(16,185,129,0.2)" className="animate-fade-in delay-1000" />
+        </svg>
+
         {/* Subtle grid background */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
+        <div className="absolute inset-0 opacity-[0.025]" style={{
           backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
           backgroundSize: "64px 64px",
         }} />
@@ -57,7 +87,7 @@ export default function Home() {
           <div className="animate-fade-up delay-400 mt-10 flex items-center gap-4">
             <Link
               href="/sign-quote"
-              className="group relative rounded-md bg-white px-6 py-2.5 text-sm font-medium text-zinc-950 transition-all hover:shadow-[0_0_24px_rgba(255,255,255,0.1)]"
+              className="group relative rounded-md bg-white px-6 py-2.5 text-sm font-medium text-zinc-950 transition-all hover:shadow-[0_0_24px_rgba(255,255,255,0.15)]"
             >
               Launch App
             </Link>
@@ -72,8 +102,14 @@ export default function Home() {
       </section>
 
       {/* Lifecycle */}
-      <section ref={lifecycle.ref} className="border-t border-zinc-800/60 px-6 py-20 sm:px-12 lg:px-20">
-        <div className="mx-auto max-w-4xl">
+      <section ref={lifecycle.ref} className="relative border-t border-zinc-800/60 px-6 py-20 sm:px-12 lg:px-20 overflow-hidden">
+        {/* Rotating mesh gradient */}
+        <div className="absolute top-[-50%] left-[-20%] w-[140%] h-[200%] opacity-[0.06] pointer-events-none animate-mesh-rotate" style={{
+          background: "conic-gradient(from 0deg at 50% 50%, #10b981 0deg, transparent 60deg, #3b82f6 120deg, transparent 180deg, #8b5cf6 240deg, transparent 300deg, #10b981 360deg)",
+          filter: "blur(100px)",
+        }} />
+
+        <div className="relative mx-auto max-w-4xl">
           <h2 className={`text-2xl font-bold text-white mb-12 transition-all duration-500 ${lifecycle.visible ? "opacity-100" : "opacity-0 translate-y-4"}`}>
             How a repo settles
           </h2>
@@ -99,7 +135,7 @@ export default function Home() {
               ].map((item, i) => (
                 <div
                   key={item.step}
-                  className={`relative rounded-lg border border-zinc-800/60 bg-zinc-900/50 p-6 transition-all duration-500 hover:border-zinc-700 hover:bg-zinc-900 ${lifecycle.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+                  className={`relative rounded-lg border border-zinc-800/60 bg-zinc-900/50 backdrop-blur-sm p-6 transition-all duration-500 hover:border-zinc-700 hover:bg-zinc-900 ${lifecycle.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
                   style={{ transitionDelay: lifecycle.visible ? `${300 + i * 150}ms` : "0ms" }}
                 >
                   <div className="flex items-center justify-center w-8 h-8 rounded-full border border-zinc-700 bg-zinc-900 text-sm font-mono text-zinc-300 mb-4">
@@ -119,8 +155,18 @@ export default function Home() {
       </section>
 
       {/* Capabilities */}
-      <section ref={capabilities.ref} className="border-t border-zinc-800/60 px-6 py-20 sm:px-12 lg:px-20">
-        <div className="mx-auto max-w-4xl">
+      <section ref={capabilities.ref} className="relative border-t border-zinc-800/60 px-6 py-20 sm:px-12 lg:px-20 overflow-hidden">
+        {/* Floating glow orbs */}
+        <div
+          className="absolute top-[30%] left-[20%] w-[500px] h-[500px] rounded-full opacity-[0.1] blur-[100px] pointer-events-none animate-float-reverse"
+          style={{ background: "radial-gradient(circle, #10b981 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] rounded-full opacity-[0.07] blur-[90px] pointer-events-none animate-float-slow"
+          style={{ background: "radial-gradient(circle, #3b82f6 0%, transparent 70%)", animationDelay: "3s" }}
+        />
+
+        <div className="relative mx-auto max-w-4xl">
           <h2 className={`text-2xl font-bold text-white mb-12 transition-all duration-500 ${capabilities.visible ? "opacity-100" : "opacity-0 translate-y-4"}`}>
             What makes it work
           </h2>
