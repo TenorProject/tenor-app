@@ -43,9 +43,12 @@ function CountdownDisplay({ maturityUnix }: { maturityUnix: number }) {
 
   if (!remaining) {
     return (
-      <span className="text-yellow-400 font-medium text-sm">
-        Maturity reached — awaiting settlement
-      </span>
+      <div className="flex items-center gap-2">
+        <div className="h-1.5 w-1.5 rounded-full bg-yellow-500 animate-pulse" />
+        <span className="text-yellow-400 font-medium text-sm">
+          Maturity reached, awaiting settlement
+        </span>
+      </div>
     );
   }
 
@@ -53,21 +56,25 @@ function CountdownDisplay({ maturityUnix }: { maturityUnix: number }) {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   return (
-    <div className="flex gap-2 font-mono text-lg text-white">
+    <div className="flex gap-3 font-mono text-lg text-white">
       {days > 0 && (
-        <span>
-          {days}<span className="text-xs text-zinc-400 ml-0.5">d</span>
-        </span>
+        <div className="flex flex-col items-center">
+          <span className="text-xl font-semibold">{days}</span>
+          <span className="text-[10px] text-zinc-500 uppercase tracking-wider">days</span>
+        </div>
       )}
-      <span>
-        {pad(hours)}<span className="text-xs text-zinc-400 ml-0.5">h</span>
-      </span>
-      <span>
-        {pad(minutes)}<span className="text-xs text-zinc-400 ml-0.5">m</span>
-      </span>
-      <span>
-        {pad(seconds)}<span className="text-xs text-zinc-400 ml-0.5">s</span>
-      </span>
+      <div className="flex flex-col items-center">
+        <span className="text-xl font-semibold">{pad(hours)}</span>
+        <span className="text-[10px] text-zinc-500 uppercase tracking-wider">hrs</span>
+      </div>
+      <div className="flex flex-col items-center">
+        <span className="text-xl font-semibold">{pad(minutes)}</span>
+        <span className="text-[10px] text-zinc-500 uppercase tracking-wider">min</span>
+      </div>
+      <div className="flex flex-col items-center">
+        <span className="text-xl font-semibold tabular-nums">{pad(seconds)}</span>
+        <span className="text-[10px] text-zinc-500 uppercase tracking-wider">sec</span>
+      </div>
     </div>
   );
 }
@@ -75,15 +82,15 @@ function CountdownDisplay({ maturityUnix }: { maturityUnix: number }) {
 // ── Status Badge ─────────────────────────────────────────
 
 const STATUS_COLORS: Record<RepoStatus, string> = {
-  [RepoStatus.None]: "bg-zinc-700 text-zinc-300",
-  [RepoStatus.Open]: "bg-blue-600/20 text-blue-400 border border-blue-500/30",
-  [RepoStatus.Closed]: "bg-emerald-600/20 text-emerald-400 border border-emerald-500/30",
-  [RepoStatus.Defaulted]: "bg-red-600/20 text-red-400 border border-red-500/30",
+  [RepoStatus.None]: "bg-zinc-800 text-zinc-400",
+  [RepoStatus.Open]: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+  [RepoStatus.Closed]: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+  [RepoStatus.Defaulted]: "bg-red-500/10 text-red-400 border border-red-500/20",
 };
 
 function StatusBadge({ status }: { status: RepoStatus }) {
   return (
-    <span className={`rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}>
+    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}>
       {RepoStatusLabel[status]}
     </span>
   );
@@ -131,55 +138,63 @@ function RepoCard({
   }, [isSuccess, txHash, repo.id]);
 
   return (
-    <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-5 space-y-3">
+    <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/30 p-5 sm:p-6 space-y-4 transition-colors hover:border-zinc-700">
       <div className="flex items-center justify-between">
         <StatusBadge status={status} />
-        <span className="text-xs text-zinc-500 font-mono">{truncAddr(repo.id)}</span>
+        <span className="text-xs text-zinc-600 font-mono">{truncAddr(repo.id)}</span>
       </div>
 
-      <div className="text-sm text-zinc-400">
-        {counterpartyLabel}:{" "}
-        <span className="font-mono text-zinc-200">{truncAddr(counterparty)}</span>
-        {isLender && <span className="ml-2 text-xs text-zinc-500">(you are lender)</span>}
-        {isBorrower && <span className="ml-2 text-xs text-zinc-500">(you are borrower)</span>}
+      <div className="flex items-center gap-2 text-sm text-zinc-400">
+        <span>{counterpartyLabel}:</span>
+        <span className="font-mono text-zinc-300">{truncAddr(counterparty)}</span>
+        {isLender && <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500">you are lender</span>}
+        {isBorrower && <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500">you are borrower</span>}
       </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-        <div className="text-zinc-400">
-          Principal: <span className="text-zinc-200">{formatUSDC(repo.principal)} USDC</span>
+      <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+        <div>
+          <span className="text-xs text-zinc-500">Principal</span>
+          <p className="text-zinc-200 font-mono">{formatUSDC(repo.principal)} USDC</p>
         </div>
-        <div className="text-zinc-400">
-          Repurchase: <span className="text-zinc-200">{formatUSDC(repo.repurchase)} USDC</span>
+        <div>
+          <span className="text-xs text-zinc-500">Repurchase</span>
+          <p className="text-zinc-200 font-mono">{formatUSDC(repo.repurchase)} USDC</p>
         </div>
-        <div className="text-zinc-400 col-span-2">
-          Maturity: <span className="text-zinc-200">{new Date(maturityUnix * 1000).toLocaleString()}</span>
+        <div className="col-span-2">
+          <span className="text-xs text-zinc-500">Maturity</span>
+          <p className="text-zinc-300">{new Date(maturityUnix * 1000).toLocaleString()}</p>
         </div>
       </div>
 
       {status === RepoStatus.Open && (
-        <div className="pt-1">
+        <div className="rounded-lg bg-zinc-800/30 px-4 py-3">
+          <span className="block text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Time remaining</span>
           <CountdownDisplay maturityUnix={maturityUnix} />
         </div>
       )}
 
-      <div className="text-sm text-zinc-400">
-        Schedule:{" "}
+      <div className="flex items-center gap-2 text-sm text-zinc-500">
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span>Schedule:</span>
         <a
           href={`https://hashscan.io/testnet/schedule/${repo.scheduleAddress}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-mono text-xs text-emerald-400 underline"
+          className="font-mono text-xs text-zinc-400 underline underline-offset-2 hover:text-zinc-300 transition-colors"
         >
           {truncAddr(repo.scheduleAddress)}
         </a>
       </div>
 
       {status === RepoStatus.Open && isBorrower && (
-        <div className="pt-1">
+        <div className="pt-1 border-t border-zinc-800/40">
           <button
             onClick={() => repayEarly(repo.id as Hex)}
             disabled={isPending || isConfirming}
-            className="rounded-md bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="mt-3 rounded-md bg-white px-5 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isPending
               ? "Waiting for wallet..."
@@ -189,35 +204,41 @@ function RepoCard({
           </button>
 
           {isSuccess && !isReverted && txHash && (
-            <p className="mt-2 text-sm text-emerald-400">
-              Confirmed:{" "}
-              <a
-                href={`https://hashscan.io/testnet/transaction/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline font-mono text-xs break-all"
-              >
-                {txHash}
-              </a>
-            </p>
+            <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5">
+              <p className="text-sm text-emerald-400">
+                Confirmed{" "}
+                <a
+                  href={`https://hashscan.io/testnet/transaction/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-mono text-xs break-all"
+                >
+                  {txHash}
+                </a>
+              </p>
+            </div>
           )}
           {isReverted && txHash && (
-            <p className="mt-2 text-sm text-red-400">
-              Transaction reverted on-chain.{" "}
-              <a
-                href={`https://hashscan.io/testnet/transaction/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline font-mono text-xs text-red-300"
-              >
-                View on HashScan
-              </a>
-            </p>
+            <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-2.5">
+              <p className="text-sm text-red-400">
+                Transaction reverted on-chain.{" "}
+                <a
+                  href={`https://hashscan.io/testnet/transaction/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-mono text-xs text-red-300"
+                >
+                  View on HashScan
+                </a>
+              </p>
+            </div>
           )}
           {isError && (
-            <p className="mt-2 text-sm text-red-400">
-              {error?.message?.slice(0, 200) ?? "Transaction failed."}
-            </p>
+            <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-2.5">
+              <p className="text-sm text-red-400">
+                {error?.message?.slice(0, 200) ?? "Transaction failed."}
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -244,23 +265,38 @@ export default function DashboardPage() {
   if (!isConnected || !address) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-zinc-400">Connect your wallet to view your repos.</p>
+        <div className="text-center space-y-2">
+          <div className="text-zinc-600">
+            <svg viewBox="0 0 24 24" className="h-10 w-10 mx-auto" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="2" y="3" width="20" height="18" rx="2" />
+              <path d="M2 9h20M10 3v6" strokeLinecap="round" />
+            </svg>
+          </div>
+          <p className="text-zinc-400">Connect your wallet to view your repos.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 p-8">
-      <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-      <p className="text-sm text-zinc-400">
-        Repos involving{" "}
-        <span className="font-mono text-zinc-300">{truncAddr(address)}</span>
-      </p>
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-10 sm:px-8">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          Repos involving{" "}
+          <span className="font-mono text-zinc-400">{truncAddr(address)}</span>
+        </p>
+      </div>
 
       {loading ? (
-        <p className="text-sm text-zinc-500">Loading repos...</p>
+        <div className="flex items-center gap-2 py-8">
+          <div className="h-1.5 w-1.5 rounded-full bg-zinc-600 animate-pulse" />
+          <p className="text-sm text-zinc-500">Loading repos...</p>
+        </div>
       ) : repos.length === 0 ? (
-        <p className="text-sm text-zinc-500">No repos found.</p>
+        <div className="rounded-xl border border-dashed border-zinc-800 py-12 text-center">
+          <p className="text-sm text-zinc-500">No repos found.</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {repos.map((repo) => (

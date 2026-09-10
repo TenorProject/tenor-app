@@ -27,13 +27,13 @@ function formatMaturity(unix: string) {
   return new Date(Number(unix) * 1000).toLocaleString();
 }
 
-const EVENT_COLORS: Record<string, { border: string; bg: string; badge: string; badgeText: string }> = {
-  QuoteSigned: { border: "border-blue-500/30", bg: "bg-blue-600/10", badge: "bg-blue-600/20", badgeText: "text-blue-400" },
-  RepoOpened: { border: "border-emerald-500/30", bg: "bg-emerald-600/10", badge: "bg-emerald-600/20", badgeText: "text-emerald-400" },
-  RepoRepaidEarly: { border: "border-yellow-500/30", bg: "bg-yellow-600/10", badge: "bg-yellow-600/20", badgeText: "text-yellow-400" },
+const EVENT_COLORS: Record<string, { border: string; bg: string; badge: string; badgeText: string; dot: string }> = {
+  QuoteSigned: { border: "border-blue-500/15", bg: "bg-blue-500/5", badge: "bg-blue-500/10", badgeText: "text-blue-400", dot: "bg-blue-400" },
+  RepoOpened: { border: "border-emerald-500/15", bg: "bg-emerald-500/5", badge: "bg-emerald-500/10", badgeText: "text-emerald-400", dot: "bg-emerald-400" },
+  RepoRepaidEarly: { border: "border-yellow-500/15", bg: "bg-yellow-500/5", badge: "bg-yellow-500/10", badgeText: "text-yellow-400", dot: "bg-yellow-400" },
 };
 
-const DEFAULT_COLORS = { border: "border-zinc-700", bg: "bg-zinc-900", badge: "bg-zinc-700", badgeText: "text-zinc-300" };
+const DEFAULT_COLORS = { border: "border-zinc-800/60", bg: "bg-zinc-900/30", badge: "bg-zinc-800", badgeText: "text-zinc-400", dot: "bg-zinc-500" };
 
 function parseAuditMessage(content: string) {
   const pipeIndex = content.indexOf("|");
@@ -56,12 +56,18 @@ function AuditMessageCard({ content, sequenceNumber, timestamp }: { content: str
 
   if (!parsed) {
     return (
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3">
-        <div className="flex items-center justify-between text-xs text-zinc-500">
-          <span>#{sequenceNumber}</span>
-          <span>{formatTimestamp(timestamp)}</span>
+      <div className="relative flex gap-4">
+        <div className="flex flex-col items-center">
+          <div className="h-2.5 w-2.5 rounded-full bg-zinc-600 mt-1.5" />
+          <div className="flex-1 w-px bg-zinc-800/60" />
         </div>
-        <p className="mt-1 text-sm text-zinc-200 font-mono break-all whitespace-pre-wrap">{content}</p>
+        <div className="flex-1 rounded-xl border border-zinc-800/60 bg-zinc-900/30 px-4 py-3 mb-3">
+          <div className="flex items-center justify-between text-xs text-zinc-600">
+            <span>#{sequenceNumber}</span>
+            <span>{formatTimestamp(timestamp)}</span>
+          </div>
+          <p className="mt-1 text-sm text-zinc-300 font-mono break-all whitespace-pre-wrap">{content}</p>
+        </div>
       </div>
     );
   }
@@ -70,48 +76,59 @@ function AuditMessageCard({ content, sequenceNumber, timestamp }: { content: str
   const { fields } = parsed;
 
   return (
-    <div className={`rounded-lg border ${colors.border} ${colors.bg} px-4 py-3 space-y-2`}>
-      <div className="flex items-center justify-between">
-        <span className={`rounded px-2 py-0.5 text-xs font-medium ${colors.badge} ${colors.badgeText}`}>
-          {parsed.event}
-        </span>
-        <div className="flex items-center gap-3 text-xs text-zinc-500">
-          <span>#{sequenceNumber}</span>
-          <span>{formatTimestamp(timestamp)}</span>
-        </div>
+    <div className="relative flex gap-4">
+      <div className="flex flex-col items-center">
+        <div className={`h-2.5 w-2.5 rounded-full ${colors.dot} mt-1.5`} />
+        <div className="flex-1 w-px bg-zinc-800/60" />
       </div>
+      <div className={`flex-1 rounded-xl border ${colors.border} ${colors.bg} px-4 py-3 mb-3`}>
+        <div className="flex items-center justify-between">
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.badge} ${colors.badgeText}`}>
+            {parsed.event}
+          </span>
+          <div className="flex items-center gap-3 text-xs text-zinc-600">
+            <span>#{sequenceNumber}</span>
+            <span>{formatTimestamp(timestamp)}</span>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-        {fields.id && (
-          <div className="text-zinc-400 col-span-2">
-            ID: <span className="font-mono text-zinc-300 text-xs">{truncAddr(fields.id)}</span>
-          </div>
-        )}
-        {fields.lender && (
-          <div className="text-zinc-400">
-            Lender: <span className="font-mono text-zinc-200">{truncAddr(fields.lender)}</span>
-          </div>
-        )}
-        {fields.borrower && (
-          <div className="text-zinc-400">
-            Borrower: <span className="font-mono text-zinc-200">{truncAddr(fields.borrower)}</span>
-          </div>
-        )}
-        {fields.principal && (
-          <div className="text-zinc-400">
-            Principal: <span className="text-zinc-200">{formatUSDC(fields.principal)} USDC</span>
-          </div>
-        )}
-        {fields.maturity && (
-          <div className="text-zinc-400">
-            Maturity: <span className="text-zinc-200">{formatMaturity(fields.maturity)}</span>
-          </div>
-        )}
-        {fields.repaidAt && (
-          <div className="text-zinc-400">
-            Repaid At: <span className="text-zinc-200">{formatMaturity(fields.repaidAt)}</span>
-          </div>
-        )}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm mt-3">
+          {fields.id && (
+            <div className="text-zinc-500 col-span-2">
+              ID <span className="font-mono text-zinc-400 text-xs">{truncAddr(fields.id)}</span>
+            </div>
+          )}
+          {fields.lender && (
+            <div>
+              <span className="text-xs text-zinc-500">Lender</span>
+              <p className="font-mono text-zinc-300 text-xs">{truncAddr(fields.lender)}</p>
+            </div>
+          )}
+          {fields.borrower && (
+            <div>
+              <span className="text-xs text-zinc-500">Borrower</span>
+              <p className="font-mono text-zinc-300 text-xs">{truncAddr(fields.borrower)}</p>
+            </div>
+          )}
+          {fields.principal && (
+            <div>
+              <span className="text-xs text-zinc-500">Principal</span>
+              <p className="text-zinc-300 font-mono text-xs">{formatUSDC(fields.principal)} USDC</p>
+            </div>
+          )}
+          {fields.maturity && (
+            <div>
+              <span className="text-xs text-zinc-500">Maturity</span>
+              <p className="text-zinc-300 text-xs">{formatMaturity(fields.maturity)}</p>
+            </div>
+          )}
+          {fields.repaidAt && (
+            <div>
+              <span className="text-xs text-zinc-500">Repaid At</span>
+              <p className="text-zinc-300 text-xs">{formatMaturity(fields.repaidAt)}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -163,7 +180,7 @@ export default function AuditPage() {
 
       setPublishResult({
         kind: "success",
-        text: `Published — seq #${data.sequenceNumber}`,
+        text: `Published, sequence #${data.sequenceNumber}`,
       });
       setInput("");
       setTimeout(fetchMessages, 3000);
@@ -178,47 +195,54 @@ export default function AuditPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 p-8">
-      <h1 className="text-2xl font-bold text-white">Audit Trail</h1>
-      <p className="text-sm text-zinc-400">
-        HCS messages for the configured topic. Auto-refreshes every 10 seconds.
-      </p>
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-10 sm:px-8">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Audit Trail</h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          HCS messages for the configured topic. Auto-refreshes every 10 seconds.
+        </p>
+      </div>
 
       {/* Publish section */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-5 space-y-3">
-        <h2 className="text-sm font-medium text-zinc-300">Publish to HCS</h2>
+      <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/30 p-5 space-y-3">
+        <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Publish to HCS</h2>
         <div className="flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Message to publish..."
-            className="flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+            className="flex-1 rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
           />
           <button
             onClick={handlePublish}
             disabled={publishing || !input.trim()}
-            className="rounded-md bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="rounded-md bg-white px-5 py-2.5 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {publishing ? "Publishing..." : "Publish"}
           </button>
         </div>
         {publishResult && (
-          <p
-            className={`text-sm ${publishResult.kind === "success" ? "text-emerald-400" : "text-red-400"}`}
-          >
-            {publishResult.text}
-          </p>
+          <div className={`rounded-lg border px-4 py-2.5 ${publishResult.kind === "success" ? "border-emerald-500/20 bg-emerald-500/5" : "border-red-500/20 bg-red-500/5"}`}>
+            <p className={`text-sm ${publishResult.kind === "success" ? "text-emerald-400" : "text-red-400"}`}>
+              {publishResult.text}
+            </p>
+          </div>
         )}
       </div>
 
       {/* Message list */}
       {loading ? (
-        <p className="text-sm text-zinc-500">Loading messages...</p>
+        <div className="flex items-center gap-2 py-8">
+          <div className="h-1.5 w-1.5 rounded-full bg-zinc-600 animate-pulse" />
+          <p className="text-sm text-zinc-500">Loading messages...</p>
+        </div>
       ) : messages.length === 0 ? (
-        <p className="text-sm text-zinc-500">No messages found.</p>
+        <div className="rounded-xl border border-dashed border-zinc-800 py-12 text-center">
+          <p className="text-sm text-zinc-500">No messages found.</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="pt-2">
           {messages.map((msg) => (
             <AuditMessageCard
               key={msg.sequenceNumber}

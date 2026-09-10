@@ -66,46 +66,49 @@ function QuoteCard({
 
   return (
     <div
-      className={`rounded-lg border p-5 space-y-3 ${
+      className={`rounded-xl border p-5 sm:p-6 space-y-4 transition-colors ${
         expired
-          ? "border-zinc-700 bg-zinc-900/50 opacity-50"
-          : "border-zinc-700 bg-zinc-900"
+          ? "border-zinc-800/40 bg-zinc-900/20 opacity-40"
+          : "border-zinc-800/60 bg-zinc-900/30 hover:border-zinc-700"
       }`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm text-zinc-400">
-          Lender:{" "}
-          <span className="font-mono text-zinc-200">
-            {truncateAddress(quote.lender)}
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-zinc-600" />
+          <span className="text-sm text-zinc-400">
+            Lender{" "}
+            <span className="font-mono text-zinc-300">
+              {truncateAddress(quote.lender)}
+            </span>
           </span>
-        </span>
+        </div>
         {expired && (
-          <span className="rounded bg-zinc-700 px-2 py-0.5 text-xs text-zinc-400">
+          <span className="rounded-full bg-zinc-800 px-2.5 py-0.5 text-xs text-zinc-500">
             Expired
           </span>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-        <div className="text-zinc-400">
-          Principal:{" "}
-          <span className="text-zinc-200">{formatUSDC(quote.principal)} USDC</span>
+      <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+        <div>
+          <span className="text-xs text-zinc-500">Principal</span>
+          <p className="text-zinc-200 font-mono">{formatUSDC(quote.principal)} USDC</p>
         </div>
-        <div className="text-zinc-400">
-          Repurchase:{" "}
-          <span className="text-zinc-200">{formatUSDC(quote.repurchase)} USDC</span>
+        <div>
+          <span className="text-xs text-zinc-500">Repurchase</span>
+          <p className="text-zinc-200 font-mono">{formatUSDC(quote.repurchase)} USDC</p>
         </div>
-        <div className="text-zinc-400">
-          Maturity:{" "}
-          <span className="text-zinc-200">{formatDate(quote.maturity)}</span>
+        <div>
+          <span className="text-xs text-zinc-500">Maturity</span>
+          <p className="text-zinc-300">{formatDate(quote.maturity)}</p>
         </div>
-        <div className="text-zinc-400">
-          Haircut:{" "}
-          <span className="text-zinc-200">{bpsPercent}%</span>
+        <div>
+          <span className="text-xs text-zinc-500">Haircut</span>
+          <p className="text-zinc-300">{bpsPercent}%</p>
         </div>
-        <div className="text-zinc-400 col-span-2">
-          Quote Expiry:{" "}
-          <span className="text-zinc-200">{formatDate(quote.quoteExpiry)}</span>
+        <div className="col-span-2">
+          <span className="text-xs text-zinc-500">Quote Expiry</span>
+          <p className="text-zinc-300">{formatDate(quote.quoteExpiry)}</p>
         </div>
       </div>
 
@@ -113,7 +116,7 @@ function QuoteCard({
         <button
           onClick={onExecute}
           disabled={expired || isPending || (isActive && isConfirming)}
-          className="rounded-md bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="rounded-md bg-white px-5 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {isActive && isPending
             ? "Waiting for wallet..."
@@ -123,35 +126,41 @@ function QuoteCard({
         </button>
 
         {isActive && isSuccess && !isReverted && txHash && (
-          <p className="mt-2 text-sm text-emerald-400">
-            Confirmed:{" "}
-            <a
-              href={`https://hashscan.io/testnet/transaction/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline font-mono text-xs break-all"
-            >
-              {txHash}
-            </a>
-          </p>
+          <div className="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5">
+            <p className="text-sm text-emerald-400">
+              Confirmed{" "}
+              <a
+                href={`https://hashscan.io/testnet/transaction/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-mono text-xs break-all"
+              >
+                {txHash}
+              </a>
+            </p>
+          </div>
         )}
         {isActive && isReverted && txHash && (
-          <p className="mt-2 text-sm text-red-400">
-            Transaction reverted on-chain.{" "}
-            <a
-              href={`https://hashscan.io/testnet/transaction/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline font-mono text-xs text-red-300"
-            >
-              View on HashScan
-            </a>
-          </p>
+          <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-2.5">
+            <p className="text-sm text-red-400">
+              Transaction reverted on-chain.{" "}
+              <a
+                href={`https://hashscan.io/testnet/transaction/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-mono text-xs text-red-300"
+              >
+                View on HashScan
+              </a>
+            </p>
+          </div>
         )}
         {isActive && isError && (
-          <p className="mt-2 text-sm text-red-400">
-            {decodeErrorName(error)}
-          </p>
+          <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-2.5">
+            <p className="text-sm text-red-400">
+              {decodeErrorName(error)}
+            </p>
+          </div>
         )}
       </div>
     </div>
@@ -215,7 +224,15 @@ export default function OpenRepoPage() {
   if (!isConnected || !address) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-zinc-400">Connect your wallet to view available quotes.</p>
+        <div className="text-center space-y-2">
+          <div className="text-zinc-600">
+            <svg viewBox="0 0 24 24" className="h-10 w-10 mx-auto" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M9 3v18" strokeLinecap="round" />
+            </svg>
+          </div>
+          <p className="text-zinc-400">Connect your wallet to view available quotes.</p>
+        </div>
       </div>
     );
   }
@@ -228,18 +245,25 @@ export default function OpenRepoPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 p-8">
-      <h1 className="text-2xl font-bold text-white">Open Repo</h1>
-      <p className="text-sm text-zinc-400">
-        Quotes addressed to{" "}
-        <span className="font-mono text-zinc-300">{truncateAddress(address)}</span>.
-        Execute a quote to open the repo on-chain.
-      </p>
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-10 sm:px-8">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Open Repo</h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          Quotes addressed to{" "}
+          <span className="font-mono text-zinc-400">{truncateAddress(address)}</span>.
+          Execute a quote to open the repo on-chain.
+        </p>
+      </div>
 
       {loading ? (
-        <p className="text-sm text-zinc-500">Loading quotes...</p>
+        <div className="flex items-center gap-2 py-8">
+          <div className="h-1.5 w-1.5 rounded-full bg-zinc-600 animate-pulse" />
+          <p className="text-sm text-zinc-500">Loading quotes...</p>
+        </div>
       ) : quotes.length === 0 ? (
-        <p className="text-sm text-zinc-500">No quotes available for your address.</p>
+        <div className="rounded-xl border border-dashed border-zinc-800 py-12 text-center">
+          <p className="text-sm text-zinc-500">No quotes available for your address.</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {quotes.map((sq) => (
