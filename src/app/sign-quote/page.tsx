@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import { keccak256, toHex, parseUnits, type Address, type Hex } from "viem";
 import { TENOR_SETTLEMENT_ADDRESS } from "@/abi";
+import { publishToHcs } from "@/lib/hcs";
 
 const DEFAULT_SECURITY = (process.env.NEXT_PUBLIC_SECURITY_ADDRESS ?? "") as string;
 const DEFAULT_CASH = (process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "") as string;
@@ -172,6 +173,9 @@ export default function SignQuotePage() {
 
       setSavedRequestId(requestId);
       setStatus("done");
+      publishToHcs(
+        `QuoteSigned | id=${requestId} | lender=${address} | borrower=${borrower} | principal=${message.principal} | maturity=${message.maturity}`,
+      );
       setRequestId(generateRequestId());
     } catch (err) {
       setStatus("error");
