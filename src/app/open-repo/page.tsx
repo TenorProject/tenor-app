@@ -59,9 +59,10 @@ function QuoteCard({
   const expired = Number(quote.quoteExpiry) < nowSec;
   const bpsPercent = (Number(quote.haircutBps) / 100).toFixed(2);
 
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess, isError: isReceiptError, data: receipt } = useWaitForTransactionReceipt({
     hash: isActive ? txHash : undefined,
   });
+  const isReverted = isReceiptError || receipt?.status === "reverted";
 
   return (
     <div
@@ -121,7 +122,7 @@ function QuoteCard({
               : "Execute"}
         </button>
 
-        {isActive && isSuccess && txHash && (
+        {isActive && isSuccess && !isReverted && txHash && (
           <p className="mt-2 text-sm text-emerald-400">
             Confirmed:{" "}
             <a
@@ -131,6 +132,19 @@ function QuoteCard({
               className="underline font-mono text-xs break-all"
             >
               {txHash}
+            </a>
+          </p>
+        )}
+        {isActive && isReverted && txHash && (
+          <p className="mt-2 text-sm text-red-400">
+            Transaction reverted on-chain.{" "}
+            <a
+              href={`https://hashscan.io/testnet/transaction/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-mono text-xs text-red-300"
+            >
+              View on HashScan
             </a>
           </p>
         )}

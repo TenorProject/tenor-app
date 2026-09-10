@@ -116,7 +116,8 @@ function RepoCard({
     : RepoStatus.None;
 
   const { repayEarly, txHash, isPending, isError, error } = useRepayEarly();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+  const { isLoading: isConfirming, isSuccess, isError: isReceiptError, data: receipt } = useWaitForTransactionReceipt({ hash: txHash });
+  const isReverted = isReceiptError || receipt?.status === "reverted";
 
   // Fire-and-forget HCS publish when repayEarly tx confirms
   const hcsPublished = useRef<string | undefined>(undefined);
@@ -187,7 +188,7 @@ function RepoCard({
                 : "Repay Early"}
           </button>
 
-          {isSuccess && txHash && (
+          {isSuccess && !isReverted && txHash && (
             <p className="mt-2 text-sm text-emerald-400">
               Confirmed:{" "}
               <a
@@ -197,6 +198,19 @@ function RepoCard({
                 className="underline font-mono text-xs break-all"
               >
                 {txHash}
+              </a>
+            </p>
+          )}
+          {isReverted && txHash && (
+            <p className="mt-2 text-sm text-red-400">
+              Transaction reverted on-chain.{" "}
+              <a
+                href={`https://hashscan.io/testnet/transaction/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-mono text-xs text-red-300"
+              >
+                View on HashScan
               </a>
             </p>
           )}
