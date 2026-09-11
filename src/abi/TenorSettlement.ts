@@ -475,3 +475,8 @@ export const TENOR_SETTLEMENT_ABI = [
 
 export const TENOR_SETTLEMENT_ADDRESS = process.env
   .NEXT_PUBLIC_TENOR_SETTLEMENT_ADDRESS as `0x${string}`;
+
+console.log("[Tenor ENV] TENOR_SETTLEMENT_ADDRESS =", TENOR_SETTLEMENT_ADDRESS);
+console.log("[Tenor ENV] NEXT_PUBLIC_USDC_ADDRESS =", process.env.NEXT_PUBLIC_USDC_ADDRESS);
+console.log("[Tenor ENV] NEXT_PUBLIC_SECURITY_ADDRESS =", process.env.NEXT_PUBLIC_SECURITY_ADDRESS);
+console.log("[Tenor ENV] NEXT_PUBLIC_HCS_TOPIC_ID =", process.env.NEXT_PUBLIC_HCS_TOPIC_ID);
