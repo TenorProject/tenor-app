@@ -1,21 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, type Address, type Hex } from "viem";
 import { useErc20Allowance, useErc20Approve } from "@/hooks/useErc20";
 import { TENOR_SETTLEMENT_ADDRESS } from "@/abi";
 import { formatUnits } from "viem";
-
-const AUTHORIZE_OPERATOR_ABI = [
-  {
-    type: "function",
-    name: "authorizeOperator",
-    inputs: [{ name: "operator", type: "address", internalType: "address" }],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-] as const;
 
 const DEFAULT_USDC = (process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "") as string;
 const DEFAULT_SECURITY = (process.env.NEXT_PUBLIC_SECURITY_ADDRESS ?? "") as string;
@@ -56,30 +46,16 @@ function TxFeedback({ txHash, isPending, isError, error }: {
 function LenderSetup({ address }: { address: Address }) {
   const [usdcAddress, setUsdcAddress] = useState(DEFAULT_USDC);
   const [amount, setAmount] = useState("1000000");
-  const [securityAddress, setSecurityAddress] = useState(DEFAULT_SECURITY);
 
   const token = usdcAddress.startsWith("0x") ? (usdcAddress as Address) : undefined;
-  const bondToken = securityAddress.startsWith("0x") ? (securityAddress as Address) : undefined;
 
   const { data: allowance } = useErc20Allowance(token, address, TENOR_SETTLEMENT_ADDRESS);
   const { approve, txHash, isPending, isError, error } = useErc20Approve();
-
-  const { writeContract, data: authTxHash, isPending: authPending, isError: authIsError, error: authError } = useWriteContract();
 
   function handleApprove() {
     if (!token) return;
     const parsed = parseUnits(amount, 6);
     approve(token, TENOR_SETTLEMENT_ADDRESS, parsed);
-  }
-
-  function handleAuthorizeBond() {
-    if (!bondToken) return;
-    writeContract({
-      address: bondToken,
-      abi: AUTHORIZE_OPERATOR_ABI,
-      functionName: "authorizeOperator",
-      args: [TENOR_SETTLEMENT_ADDRESS],
-    });
   }
 
   return (
@@ -90,7 +66,7 @@ function LenderSetup({ address }: { address: Address }) {
           <h2 className="text-lg font-semibold text-white">Lender Setup</h2>
         </div>
         <p className="text-sm text-zinc-500">
-          Approve USDC spending and authorize TenorSettlement on the ATS security token.
+          Approve USDC spending by the TenorSettlement contract.
         </p>
       </div>
 
@@ -122,7 +98,7 @@ function LenderSetup({ address }: { address: Address }) {
           disabled={!token || isPending}
           className="w-fit rounded-md bg-white px-5 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          Approve USDC
+          Approve
         </button>
 
         <TxFeedback txHash={txHash} isPending={isPending} isError={isError} error={error} />
@@ -135,28 +111,6 @@ function LenderSetup({ address }: { address: Address }) {
             </span>
           </div>
         )}
-
-        <div className="border-t border-zinc-800/60 pt-4 mt-1">
-          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-3">ATS Bond Authorization</p>
-          <label className="block text-sm mb-3">
-            <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Security Token Address</span>
-            <input
-              type="text"
-              value={securityAddress}
-              onChange={(e) => setSecurityAddress(e.target.value)}
-              placeholder="0x..."
-              className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
-            />
-          </label>
-          <button
-            onClick={handleAuthorizeBond}
-            disabled={!bondToken || authPending}
-            className="w-fit rounded-md bg-white px-5 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            Authorize Operator
-          </button>
-          <TxFeedback txHash={authTxHash} isPending={authPending} isError={authIsError} error={authError} />
-        </div>
       </div>
     </section>
   );
@@ -168,19 +122,8 @@ function BorrowerSetup({ address }: { address: Address }) {
 
   const token = securityAddress.startsWith("0x") ? (securityAddress as Address) : undefined;
 
-  const { writeContract, data: txHash, isPending, isError, error } = useWriteContract();
   const { approve, txHash: approveTxHash, isPending: approvePending, isError: approveIsError, error: approveError } = useErc20Approve();
   const { data: allowance } = useErc20Allowance(token, address, TENOR_SETTLEMENT_ADDRESS);
-
-  function handleAuthorize() {
-    if (!token) return;
-    writeContract({
-      address: token,
-      abi: AUTHORIZE_OPERATOR_ABI,
-      functionName: "authorizeOperator",
-      args: [TENOR_SETTLEMENT_ADDRESS],
-    });
-  }
 
   function handleApprove() {
     if (!token) return;
@@ -195,7 +138,7 @@ function BorrowerSetup({ address }: { address: Address }) {
           <h2 className="text-lg font-semibold text-white">Borrower Setup</h2>
         </div>
         <p className="text-sm text-zinc-500">
-          Approve and authorize TenorSettlement on the ATS security token.
+          Approve TenorSettlement to transfer your ATS security tokens.
         </p>
       </div>
 
@@ -211,43 +154,33 @@ function BorrowerSetup({ address }: { address: Address }) {
           />
         </label>
 
+        <label className="block text-sm">
+          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Approval Amount (raw)</span>
+          <input
+            type="text"
+            value={approveAmount}
+            onChange={(e) => setApproveAmount(e.target.value)}
+            placeholder="1000000"
+            className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
+          />
+        </label>
+
         <button
-          onClick={handleAuthorize}
-          disabled={!token || isPending}
+          onClick={handleApprove}
+          disabled={!token || approvePending}
           className="w-fit rounded-md bg-white px-5 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          Authorize Operator
+          Approve
         </button>
 
-        <TxFeedback txHash={txHash} isPending={isPending} isError={isError} error={error} />
+        <TxFeedback txHash={approveTxHash} isPending={approvePending} isError={approveIsError} error={approveError} />
 
-        <div className="border-t border-zinc-800/60 pt-4 mt-1">
-          <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-3">ERC-20 Approval</p>
-          <label className="block text-sm mb-3">
-            <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Approval Amount (raw)</span>
-            <input
-              type="text"
-              value={approveAmount}
-              onChange={(e) => setApproveAmount(e.target.value)}
-              placeholder="1000000"
-              className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
-            />
-          </label>
-          <button
-            onClick={handleApprove}
-            disabled={!token || approvePending}
-            className="w-fit rounded-md bg-white px-5 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            Approve
-          </button>
-          <TxFeedback txHash={approveTxHash} isPending={approvePending} isError={approveIsError} error={approveError} />
-          {allowance !== undefined && token && (
-            <div className="flex items-center gap-2 text-sm text-zinc-500 mt-3">
-              <span>Current allowance:</span>
-              <span className="font-mono text-zinc-300">{allowance.toString()}</span>
-            </div>
-          )}
-        </div>
+        {allowance !== undefined && token && (
+          <div className="flex items-center gap-2 text-sm text-zinc-500 mt-3">
+            <span>Current allowance:</span>
+            <span className="font-mono text-zinc-300">{allowance.toString()}</span>
+          </div>
+        )}
       </div>
     </section>
   );
