@@ -33,7 +33,7 @@ export function useRepo(id: Hex | undefined) {
         repurchase: data[7],
         maturity: BigInt(data[8]),
         haircutBps: data[9],
-        closeHoldId: data[10],
+        escrowedQty: data[10],
         scheduleAddress: data[11],
         status: data[12] as RepoStatus,
       }
