@@ -99,46 +99,46 @@ export default function ComplianceTestPage() {
 
       <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/30 p-6 sm:p-8 space-y-5">
         <label className="block text-sm">
-          <span className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1.5">Security Token Address</span>
+          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Security Token Address</span>
           <input
             type="text"
             value={securityAddress}
             onChange={(e) => setSecurityAddress(e.target.value)}
             placeholder="0x..."
-            className="block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
+            className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
           />
         </label>
 
         <label className="block text-sm">
-          <span className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1.5">Non-whitelisted Address</span>
+          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Non-whitelisted Address</span>
           <input
             type="text"
             value={target}
             onChange={(e) => setTarget(e.target.value)}
             placeholder="0x... (address not in the identity registry)"
-            className="block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
+            className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
           />
         </label>
 
         <div className="grid grid-cols-2 gap-4">
           <label className="block text-sm">
-            <span className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1.5">Amount</span>
+            <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Amount</span>
             <input
               type="text"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="1"
-              className="block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
+              className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
             />
           </label>
 
           <label className="block text-sm">
-            <span className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1.5">Partition (bytes32)</span>
+            <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Partition (bytes32)</span>
             <input
               type="text"
               value={partition}
               onChange={(e) => setPartition(e.target.value)}
-              className="block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
+              className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
             />
           </label>
         </div>
