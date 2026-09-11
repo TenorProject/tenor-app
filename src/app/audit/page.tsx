@@ -205,14 +205,14 @@ export default function AuditPage() {
 
       {/* Publish section */}
       <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/30 p-5 space-y-3">
-        <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Publish to HCS</h2>
+        <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wide">Publish to HCS</h2>
         <div className="flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Message to publish..."
-            className="flex-1 rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
+            className="flex-1 rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
           />
           <button
             onClick={handlePublish}

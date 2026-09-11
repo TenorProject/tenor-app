@@ -82,24 +82,24 @@ function LenderSetup({ address }: { address: Address }) {
 
       <div className="flex flex-col gap-4">
         <label className="block text-sm">
-          <span className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1.5">USDC Token Address</span>
+          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">USDC Token Address</span>
           <input
             type="text"
             value={usdcAddress}
             onChange={(e) => setUsdcAddress(e.target.value)}
             placeholder="0x..."
-            className="block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
+            className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
           />
         </label>
 
         <label className="block text-sm">
-          <span className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1.5">Approval Amount (USDC)</span>
+          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Approval Amount (USDC)</span>
           <input
             type="text"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="1000000"
-            className="block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
+            className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
           />
         </label>
 
@@ -157,13 +157,13 @@ function BorrowerSetup({ address }: { address: Address }) {
 
       <div className="flex flex-col gap-4">
         <label className="block text-sm">
-          <span className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-1.5">Security Token Address</span>
+          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Security Token Address</span>
           <input
             type="text"
             value={securityAddress}
             onChange={(e) => setSecurityAddress(e.target.value)}
             placeholder="0x..."
-            className="block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none hover:border-zinc-700 transition-colors"
+            className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
           />
         </label>
 

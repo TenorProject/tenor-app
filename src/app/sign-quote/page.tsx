@@ -60,7 +60,7 @@ function InputField({
 }) {
   return (
     <label className="block text-sm text-zinc-400">
-      <span className="mb-1.5 block text-xs font-medium text-zinc-500 uppercase tracking-wide">
+      <span className="mb-1.5 block text-xs font-medium text-zinc-400 uppercase tracking-wide">
         {label}
       </span>
       <input
@@ -69,7 +69,7 @@ function InputField({
         onChange={(e) => onChange(e.target.value)}
         readOnly={readOnly}
         placeholder={placeholder}
-        className={`block w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none transition-colors ${readOnly ? "opacity-50 cursor-not-allowed" : "hover:border-zinc-700"}`}
+        className={`block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none transition-colors ${readOnly ? "opacity-50 cursor-not-allowed" : "hover:border-zinc-600"}`}
       />
     </label>
   );
@@ -205,7 +205,7 @@ export default function SignQuotePage() {
       <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/30 p-6 sm:p-8 space-y-6">
         {/* Identities */}
         <div className="space-y-4">
-          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Parties</h3>
+          <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wide">Parties</h3>
           <InputField label="Request ID" value={requestId} onChange={() => {}} readOnly />
           <InputField label="Lender (you)" value={address} onChange={() => {}} readOnly />
           <InputField label="Borrower" value={borrower} onChange={setBorrower} placeholder="0x..." />
@@ -215,7 +215,7 @@ export default function SignQuotePage() {
 
         {/* Tokens */}
         <div className="space-y-4">
-          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Tokens</h3>
+          <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wide">Tokens</h3>
           <div className="grid grid-cols-2 gap-4">
             <InputField label="Security Token" value={security} onChange={setSecurity} placeholder="0x..." />
             <InputField label="Cash Token (USDC)" value={cash} onChange={setCash} placeholder="0x..." />
@@ -227,7 +227,7 @@ export default function SignQuotePage() {
 
         {/* Terms */}
         <div className="space-y-4">
-          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Terms</h3>
+          <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wide">Terms</h3>
           <div className="grid grid-cols-2 gap-4">
             <InputField label="Collateral Qty (raw units)" value={collateralQty} onChange={setCollateralQty} placeholder="e.g. 1000" />
             <InputField label="Haircut (bps, e.g. 500 = 5%)" value={haircutBps} onChange={setHaircutBps} placeholder="500" />
@@ -242,7 +242,7 @@ export default function SignQuotePage() {
 
         {/* Schedule */}
         <div className="space-y-4">
-          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Schedule</h3>
+          <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wide">Schedule</h3>
           <div className="grid grid-cols-2 gap-4">
             <InputField label="Maturity" value={maturity} onChange={setMaturity} type="datetime-local" />
             <InputField label="Quote Expiry" value={quoteExpiry} onChange={setQuoteExpiry} type="datetime-local" />
