@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/logo.svg" alt="Tenor" width="280" />
+</p>
 
-## Getting Started
+<p align="center">
+  <strong>Repurchase agreements, settled on Hedera.</strong>
+</p>
 
-First, run the development server:
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0-white?style=flat-square" alt="version" />
+  <img src="https://img.shields.io/badge/hedera-testnet-8B5CF6?style=flat-square" alt="hedera testnet" />
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="license" />
+</p>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+Tenor moves repo settlement on-chain. Lenders sign quotes with EIP-712 typed data, borrowers post collateral and execute on the TenorSettlement smart contract, and every lifecycle event is recorded to an immutable audit trail on Hedera Consensus Service.
+
+## How it works
+
+```
+Lender signs quote (off-chain, gasless)
+        |
+        v
+Borrower calls openRepo (on-chain)
+        |
+  +-----------+-----------+
+  |           |           |
+USDC flows   Collateral   Scheduled
+to borrower  escrowed     maturity set
+        |
+        v
+At maturity: borrower repays, collateral returns
+         or: borrower defaults, lender claims collateral
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**1. Lender signs a quote** — defines terms (principal, repurchase price, maturity, haircut) and commits with an EIP-712 signature. No transaction, no gas.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**2. Borrower opens the repo** — reviews the signed quote, posts collateral, and calls `openRepo` on the smart contract. Principal transfers from lender to borrower atomically.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**3. Settlement at maturity** — the borrower repays the repurchase amount and recovers collateral. Early repayment is supported. If the borrower does not repay, the lender claims the collateral.
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+| Layer | Technology |
+|-------|-----------|
+| Smart contract | Solidity on Hedera EVM (fast finality, low fees, native scheduled transactions) |
+| Security tokens | ATS-compliant ERC-1400 with transfer restrictions enforced at contract level |
+| Signatures | EIP-712 typed data via wagmi/viem |
+| Audit trail | Hedera Consensus Service (HCS) — tamper-proof, timestamped event log |
+| Frontend | Next.js 16, React 19, Tailwind CSS |
+| Wallet | WalletConnect + Rabby/MetaMask via wagmi v3 |
+| Database | SQLite (better-sqlite3) for quote/repo indexing |
+| Deployment | Docker (standalone) on Railway |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Route | Purpose |
+|-------|---------|
+| `/` | Landing page |
+| `/sign-quote` | Lender creates and signs a repo quote |
+| `/open-repo` | Borrower views and executes available quotes |
+| `/dashboard` | View active repos, repay early, countdown to maturity |
+| `/setup` | One-time ERC-20 approvals for USDC and security tokens |
+| `/compliance-test` | Test ATS transfer restrictions |
+| `/audit` | Browse HCS audit trail and publish messages |
 
-## Deploy on Vercel
+## Quick start
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# Install dependencies
+npm install
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Set up environment
+cp .env.example .env.local
+# Fill in the values (see Environment section below)
+
+# Run development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Environment
+
+| Variable | Description | Build-time |
+|----------|-------------|:----------:|
+| `NEXT_PUBLIC_TENOR_SETTLEMENT_ADDRESS` | TenorSettlement contract (EVM address) | Yes |
+| `NEXT_PUBLIC_HEDERA_RPC_URL` | Hedera JSON-RPC relay | Yes |
+| `NEXT_PUBLIC_USDC_ADDRESS` | USDC token address on Hedera | Yes |
+| `NEXT_PUBLIC_SECURITY_ADDRESS` | ATS security token (bond) address | Yes |
+| `NEXT_PUBLIC_HCS_TOPIC_ID` | HCS topic for audit trail | Yes |
+| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | WalletConnect project ID | Yes |
+| `HEDERA_OPERATOR_ID` | Hedera account for HCS publishing | No |
+| `HEDERA_OPERATOR_KEY` | ECDSA private key for HCS publishing | No |
+| `DATABASE_PATH` | SQLite database file path | No |
+
+> `NEXT_PUBLIC_*` variables are inlined at build time. Changing them requires a full rebuild, not just a restart.
+
+## Docker
+
+```bash
+docker build -t tenor-app .
+docker run -p 3000:3000 -v tenor-data:/data tenor-app
+```
+
+For Railway or similar platforms, set all `NEXT_PUBLIC_*` variables in the dashboard. They are passed as Docker build args automatically.
+
+## Contract
+
+The `TenorSettlement` contract exposes:
+
+- `openRepo(quote, signature)` — verify EIP-712 signature, transfer principal, escrow collateral, schedule maturity
+- `repayEarly(id)` — borrower repays before maturity
+- `closeRepo(id)` — settlement at maturity
+- `claimCollateral(id)` — lender claims after default
+- `cancelQuote(requestId)` — lender invalidates an unused quote
+
+All lifecycle events emit on-chain logs and are mirrored to HCS for an independent audit trail.
+
+## License
+
+MIT
