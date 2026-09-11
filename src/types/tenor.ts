@@ -42,7 +42,7 @@ export interface Repo {
   repurchase: bigint;
   maturity: bigint;
   haircutBps: bigint;
-  closeHoldId: bigint;
+  escrowedQty: bigint;
   scheduleAddress: Address;
   status: RepoStatus;
 }
