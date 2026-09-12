@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0-white?style=flat-square" alt="version" />
+  <img src="https://img.shields.io/badge/version-0.3.0-white?style=flat-square" alt="version" />
   <img src="https://img.shields.io/badge/hedera-testnet-8B5CF6?style=flat-square" alt="hedera testnet" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="license" />
 </p>
