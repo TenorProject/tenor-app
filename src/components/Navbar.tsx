@@ -6,6 +6,8 @@ import { ConnectButton } from "./ConnectButton";
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/borrow", label: "Borrow" },
+  { href: "/market", label: "Market" },
   { href: "/open-repo", label: "Open Repo" },
   { href: "/sign-quote", label: "Sign Quote" },
   { href: "/compliance-test", label: "Compliance" },

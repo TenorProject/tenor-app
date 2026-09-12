@@ -26,6 +26,20 @@ db.exec(`
     created_at      INTEGER NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS borrow_requests (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    borrower        TEXT NOT NULL,
+    security        TEXT NOT NULL,
+    collateral_qty  TEXT NOT NULL,
+    cash            TEXT NOT NULL,
+    principal       TEXT NOT NULL,
+    maturity_days   INTEGER NOT NULL,
+    haircut_bps     INTEGER NOT NULL,
+    note            TEXT NOT NULL DEFAULT '',
+    status          TEXT NOT NULL DEFAULT 'open',
+    created_at      INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS repos (
     id                TEXT PRIMARY KEY,
     lender            TEXT NOT NULL,
@@ -205,4 +219,180 @@ export function updateRepoStatus(id: string, status: number): void {
     Date.now(),
     id,
   );
+}
+
+// ── Borrow Request helpers ───────────────────────────────
+
+export interface BorrowRequest {
+  id: number;
+  borrower: string;
+  security: string;
+  collateralQty: string;
+  cash: string;
+  principal: string;
+  maturityDays: number;
+  haircutBps: number;
+  note: string;
+  status: string;
+  createdAt: number;
+}
+
+interface BorrowRequestRow {
+  id: number;
+  borrower: string;
+  security: string;
+  collateral_qty: string;
+  cash: string;
+  principal: string;
+  maturity_days: number;
+  haircut_bps: number;
+  note: string;
+  status: string;
+  created_at: number;
+}
+
+function rowToBorrowRequest(row: BorrowRequestRow): BorrowRequest {
+  return {
+    id: row.id,
+    borrower: row.borrower,
+    security: row.security,
+    collateralQty: row.collateral_qty,
+    cash: row.cash,
+    principal: row.principal,
+    maturityDays: row.maturity_days,
+    haircutBps: row.haircut_bps,
+    note: row.note,
+    status: row.status,
+    createdAt: row.created_at,
+  };
+}
+
+const insertBorrowRequestStmt = db.prepare(`
+  INSERT INTO borrow_requests
+    (borrower, security, collateral_qty, cash, principal, maturity_days, haircut_bps, note, status, created_at)
+  VALUES
+    (@borrower, @security, @collateral_qty, @cash, @principal, @maturity_days, @haircut_bps, @note, @status, @created_at)
+`);
+
+export function insertBorrowRequest(req: {
+  borrower: string;
+  security: string;
+  collateralQty: string;
+  cash: string;
+  principal: string;
+  maturityDays: number;
+  haircutBps: number;
+  note: string;
+}): number {
+  const result = insertBorrowRequestStmt.run({
+    borrower: req.borrower,
+    security: req.security,
+    collateral_qty: req.collateralQty,
+    cash: req.cash,
+    principal: req.principal,
+    maturity_days: req.maturityDays,
+    haircut_bps: req.haircutBps,
+    note: req.note,
+    status: "open",
+    created_at: Date.now(),
+  });
+  return Number(result.lastInsertRowid);
+}
+
+export function listBorrowRequests(filters?: {
+  status?: string;
+  minPrincipal?: string;
+  maxPrincipal?: string;
+  minMaturityDays?: number;
+  maxMaturityDays?: number;
+}): BorrowRequest[] {
+  let sql = "SELECT * FROM borrow_requests WHERE 1=1";
+  const params: (string | number)[] = [];
+
+  if (filters?.status) {
+    sql += " AND status = ?";
+    params.push(filters.status);
+  }
+  if (filters?.minPrincipal) {
+    sql += " AND CAST(principal AS INTEGER) >= ?";
+    params.push(Number(filters.minPrincipal));
+  }
+  if (filters?.maxPrincipal) {
+    sql += " AND CAST(principal AS INTEGER) <= ?";
+    params.push(Number(filters.maxPrincipal));
+  }
+  if (filters?.minMaturityDays) {
+    sql += " AND maturity_days >= ?";
+    params.push(filters.minMaturityDays);
+  }
+  if (filters?.maxMaturityDays) {
+    sql += " AND maturity_days <= ?";
+    params.push(filters.maxMaturityDays);
+  }
+
+  sql += " ORDER BY created_at DESC";
+
+  const rows = db.prepare(sql).all(...params) as BorrowRequestRow[];
+  return rows.map(rowToBorrowRequest);
+}
+
+export function getBorrowRequestsByBorrower(address: string): BorrowRequest[] {
+  const rows = db
+    .prepare("SELECT * FROM borrow_requests WHERE LOWER(borrower) = LOWER(?) ORDER BY created_at DESC")
+    .all(address) as BorrowRequestRow[];
+  return rows.map(rowToBorrowRequest);
+}
+
+// ── Seed mock borrow requests (runs once) ────────────────
+
+const count = db.prepare("SELECT COUNT(*) AS n FROM borrow_requests").get() as { n: number };
+if (count.n === 0) {
+  const security = process.env.NEXT_PUBLIC_SECURITY_ADDRESS ?? "0xc2dadb01462b766bb2f58c9638b32e97200ca07d";
+  const cash = process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "0x0000000000000000000000000000000000068cda";
+  const now = Date.now();
+
+  const seeds = [
+    {
+      borrower: "0x7821973f1433273c9bc66065ef62b7d893ac27d2",
+      collateralQty: "5000",
+      principal: "10000000000",
+      maturityDays: 7,
+      haircutBps: 500,
+      note: "Looking for short-term liquidity against ATS bond position",
+      created_at: now - 2 * 60 * 60 * 1000,
+    },
+    {
+      borrower: "0x878df69aaa06e5d0af8d2d5015db81ba4e0e8068",
+      collateralQty: "15000",
+      principal: "50000000000",
+      maturityDays: 14,
+      haircutBps: 300,
+      note: "Willing to negotiate on haircut for larger principal",
+      created_at: now - 18 * 60 * 60 * 1000,
+    },
+    {
+      borrower: "0x21707f8eac809afa4c066ad43d5a45da22824337",
+      collateralQty: "2000",
+      principal: "5000000000",
+      maturityDays: 30,
+      haircutBps: 750,
+      note: "",
+      created_at: now - 3 * 24 * 60 * 60 * 1000,
+    },
+  ];
+
+  for (const s of seeds) {
+    insertBorrowRequestStmt.run({
+      borrower: s.borrower,
+      security,
+      collateral_qty: s.collateralQty,
+      cash,
+      principal: s.principal,
+      maturity_days: s.maturityDays,
+      haircut_bps: s.haircutBps,
+      note: s.note,
+      status: "open",
+      created_at: s.created_at,
+    });
+  }
 }
