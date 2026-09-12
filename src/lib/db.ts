@@ -40,6 +40,14 @@ db.exec(`
     created_at      INTEGER NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS user_profiles (
+    address       TEXT PRIMARY KEY,
+    display_name  TEXT NOT NULL,
+    telegram      TEXT NOT NULL DEFAULT '',
+    twitter       TEXT NOT NULL DEFAULT '',
+    created_at    INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS repos (
     id                TEXT PRIMARY KEY,
     lender            TEXT NOT NULL,
@@ -293,7 +301,7 @@ export function insertBorrowRequest(req: {
     maturity_days: req.maturityDays,
     haircut_bps: req.haircutBps,
     note: req.note,
-    status: "open",
+    status: "pending",
     created_at: Date.now(),
   });
   return Number(result.lastInsertRowid);
@@ -301,39 +309,69 @@ export function insertBorrowRequest(req: {
 
 export function listBorrowRequests(filters?: {
   status?: string;
+  borrower?: string;
   minPrincipal?: string;
   maxPrincipal?: string;
   minMaturityDays?: number;
   maxMaturityDays?: number;
-}): BorrowRequest[] {
-  let sql = "SELECT * FROM borrow_requests WHERE 1=1";
+  page?: number;
+  pageSize?: number;
+}): { data: BorrowRequest[]; total: number } {
+  let where = "WHERE 1=1";
   const params: (string | number)[] = [];
 
   if (filters?.status) {
-    sql += " AND status = ?";
+    where += " AND status = ?";
     params.push(filters.status);
   }
+  if (filters?.borrower) {
+    where += " AND LOWER(borrower) = LOWER(?)";
+    params.push(filters.borrower);
+  }
   if (filters?.minPrincipal) {
-    sql += " AND CAST(principal AS INTEGER) >= ?";
+    where += " AND CAST(principal AS INTEGER) >= ?";
     params.push(Number(filters.minPrincipal));
   }
   if (filters?.maxPrincipal) {
-    sql += " AND CAST(principal AS INTEGER) <= ?";
+    where += " AND CAST(principal AS INTEGER) <= ?";
     params.push(Number(filters.maxPrincipal));
   }
   if (filters?.minMaturityDays) {
-    sql += " AND maturity_days >= ?";
+    where += " AND maturity_days >= ?";
     params.push(filters.minMaturityDays);
   }
   if (filters?.maxMaturityDays) {
-    sql += " AND maturity_days <= ?";
+    where += " AND maturity_days <= ?";
     params.push(filters.maxMaturityDays);
   }
 
-  sql += " ORDER BY created_at DESC";
+  const total = (
+    db.prepare(`SELECT COUNT(*) AS n FROM borrow_requests ${where}`).get(...params) as { n: number }
+  ).n;
 
-  const rows = db.prepare(sql).all(...params) as BorrowRequestRow[];
-  return rows.map(rowToBorrowRequest);
+  const page = filters?.page ?? 1;
+  const pageSize = filters?.pageSize ?? 10;
+  const offset = (page - 1) * pageSize;
+
+  const rows = db
+    .prepare(`SELECT * FROM borrow_requests ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+    .all(...params, pageSize, offset) as BorrowRequestRow[];
+
+  return { data: rows.map(rowToBorrowRequest), total };
+}
+
+export function updateBorrowRequestStatus(id: number, status: string, borrower?: string): boolean {
+  let sql = "UPDATE borrow_requests SET status = ? WHERE id = ?";
+  const params: (string | number)[] = [status, id];
+
+  // If borrower is provided, ensure only the owner can update
+  if (borrower) {
+    sql += " AND LOWER(borrower) = LOWER(?)";
+    params.push(borrower);
+  }
+
+  const result = db.prepare(sql).run(...params);
+  return result.changes > 0;
 }
 
 export function getBorrowRequestsByBorrower(address: string): BorrowRequest[] {
@@ -379,6 +417,69 @@ if (count.n === 0) {
       note: "",
       created_at: now - 3 * 24 * 60 * 60 * 1000,
     },
+    {
+      borrower: "0x4a3b0c5e8f1d2a6b9c7e0f3d5a8b1c4e7f2a6d9b",
+      collateralQty: "8000",
+      principal: "25000000000",
+      maturityDays: 10,
+      haircutBps: 400,
+      note: "Need bridge financing for settlement cycle mismatch",
+      created_at: now - 5 * 60 * 60 * 1000,
+    },
+    {
+      borrower: "0x9c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d",
+      collateralQty: "20000",
+      principal: "75000000000",
+      maturityDays: 21,
+      haircutBps: 250,
+      note: "Institutional desk, can provide additional collateral if needed",
+      created_at: now - 8 * 60 * 60 * 1000,
+    },
+    {
+      borrower: "0x1f2e3d4c5b6a7980918273645564738291a0b1c2",
+      collateralQty: "3500",
+      principal: "12000000000",
+      maturityDays: 5,
+      haircutBps: 600,
+      note: "Short duration, flexible on terms",
+      created_at: now - 1 * 24 * 60 * 60 * 1000,
+    },
+    {
+      borrower: "0xa1b2c3d4e5f60718293a4b5c6d7e8f9001122334",
+      collateralQty: "50000",
+      principal: "200000000000",
+      maturityDays: 60,
+      haircutBps: 200,
+      note: "Large block trade, prefer single counterparty",
+      created_at: now - 2 * 24 * 60 * 60 * 1000,
+    },
+    {
+      borrower: "0x5566778899aabbccddeeff0011223344556677aa",
+      collateralQty: "1000",
+      principal: "3000000000",
+      maturityDays: 3,
+      haircutBps: 800,
+      note: "Weekend liquidity, will repurchase Monday",
+      created_at: now - 10 * 60 * 60 * 1000,
+    },
+    {
+      borrower: "0xdeadbeef1234567890abcdef1234567890abcdef",
+      collateralQty: "12000",
+      principal: "40000000000",
+      maturityDays: 28,
+      haircutBps: 350,
+      note: "Monthly repo roll, recurring borrower",
+      created_at: now - 4 * 24 * 60 * 60 * 1000,
+    },
+    {
+      borrower: "0xcafe0001babe0002dead0003beef0004face0005",
+      collateralQty: "7500",
+      principal: "18000000000",
+      maturityDays: 14,
+      haircutBps: 450,
+      note: "",
+      created_at: now - 6 * 24 * 60 * 60 * 1000,
+    },
   ];
 
   for (const s of seeds) {
@@ -391,8 +492,109 @@ if (count.n === 0) {
       maturity_days: s.maturityDays,
       haircut_bps: s.haircutBps,
       note: s.note,
-      status: "open",
+      status: "pending",
       created_at: s.created_at,
     });
   }
+
+  // Seed profiles for mock borrowers
+  const seedProfiles = [
+    { address: "0x7821973f1433273c9bc66065ef62b7d893ac27d2", display_name: "Alice Chen", telegram: "alicechen", twitter: "alice_defi" },
+    { address: "0x878df69aaa06e5d0af8d2d5015db81ba4e0e8068", display_name: "Bob Martinez", telegram: "bobmartinez", twitter: "" },
+    { address: "0x21707f8eac809afa4c066ad43d5a45da22824337", display_name: "Carol Wu", telegram: "", twitter: "carol_trades" },
+    { address: "0x4a3b0c5e8f1d2a6b9c7e0f3d5a8b1c4e7f2a6d9b", display_name: "David Park", telegram: "dpark_repo", twitter: "davidpark" },
+    { address: "0x9c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d", display_name: "Elena Volkov", telegram: "elena_v", twitter: "elenavolkov" },
+    { address: "0x1f2e3d4c5b6a7980918273645564738291a0b1c2", display_name: "Frank Tanaka", telegram: "ftanaka", twitter: "" },
+    { address: "0xa1b2c3d4e5f60718293a4b5c6d7e8f9001122334", display_name: "Grace Okafor", telegram: "", twitter: "grace_otc" },
+    { address: "0x5566778899aabbccddeeff0011223344556677aa", display_name: "Hassan Ali", telegram: "hassanali", twitter: "hassan_fi" },
+    { address: "0xdeadbeef1234567890abcdef1234567890abcdef", display_name: "Isla Reyes", telegram: "islareyes", twitter: "" },
+    { address: "0xcafe0001babe0002dead0003beef0004face0005", display_name: "James Novak", telegram: "jnovak", twitter: "jamesnovak" },
+  ];
+
+  const seedProfileStmt = db.prepare(`
+    INSERT OR REPLACE INTO user_profiles
+      (address, display_name, telegram, twitter, created_at)
+    VALUES
+      (@address, @display_name, @telegram, @twitter, @created_at)
+  `);
+
+  for (const p of seedProfiles) {
+    seedProfileStmt.run({
+      address: p.address.toLowerCase(),
+      display_name: p.display_name,
+      telegram: p.telegram,
+      twitter: p.twitter,
+      created_at: now,
+    });
+  }
+}
+
+// ── User Profile helpers ─────────────────────────────────
+
+export interface UserProfile {
+  address: string;
+  displayName: string;
+  telegram: string;
+  twitter: string;
+  createdAt: number;
+}
+
+interface UserProfileRow {
+  address: string;
+  display_name: string;
+  telegram: string;
+  twitter: string;
+  created_at: number;
+}
+
+function rowToUserProfile(row: UserProfileRow): UserProfile {
+  return {
+    address: row.address,
+    displayName: row.display_name,
+    telegram: row.telegram,
+    twitter: row.twitter,
+    createdAt: row.created_at,
+  };
+}
+
+const upsertProfileStmt = db.prepare(`
+  INSERT OR REPLACE INTO user_profiles
+    (address, display_name, telegram, twitter, created_at)
+  VALUES
+    (@address, @display_name, @telegram, @twitter, @created_at)
+`);
+
+export function upsertProfile(profile: {
+  address: string;
+  displayName: string;
+  telegram: string;
+  twitter: string;
+}): void {
+  upsertProfileStmt.run({
+    address: profile.address.toLowerCase(),
+    display_name: profile.displayName,
+    telegram: profile.telegram,
+    twitter: profile.twitter,
+    created_at: Date.now(),
+  });
+}
+
+export function getProfile(address: string): UserProfile | null {
+  const row = db
+    .prepare("SELECT * FROM user_profiles WHERE LOWER(address) = LOWER(?)")
+    .get(address) as UserProfileRow | undefined;
+  return row ? rowToUserProfile(row) : null;
+}
+
+export function getProfiles(addresses: string[]): Record<string, UserProfile> {
+  if (addresses.length === 0) return {};
+  const placeholders = addresses.map(() => "LOWER(?)").join(",");
+  const rows = db
+    .prepare(`SELECT * FROM user_profiles WHERE LOWER(address) IN (${placeholders})`)
+    .all(...addresses.map((a) => a.toLowerCase())) as UserProfileRow[];
+  const map: Record<string, UserProfile> = {};
+  for (const row of rows) {
+    map[row.address.toLowerCase()] = rowToUserProfile(row);
+  }
+  return map;
 }
