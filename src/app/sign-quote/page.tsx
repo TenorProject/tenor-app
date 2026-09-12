@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSignTypedData } from "wagmi";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -78,6 +78,19 @@ function InputField({
 }
 
 export default function SignQuotePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center gap-2 py-20 justify-center">
+        <div className="h-1.5 w-1.5 rounded-full bg-zinc-600 animate-pulse" />
+        <p className="text-sm text-zinc-500">Loading...</p>
+      </div>
+    }>
+      <SignQuoteContent />
+    </Suspense>
+  );
+}
+
+function SignQuoteContent() {
   const { address, isConnected } = useAuth();
   const { signTypedDataAsync } = useSignTypedData();
   const searchParams = useSearchParams();
