@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAccount, useSignTypedData } from "wagmi";
+import { useState, useEffect, Suspense } from "react";
+import { useSignTypedData } from "wagmi";
+import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import { keccak256, toHex, type Address, type Hex } from "viem";
 import { TENOR_SETTLEMENT_ADDRESS } from "@/abi";
 import { publishToHcs } from "@/lib/hcs";
@@ -76,8 +78,22 @@ function InputField({
 }
 
 export default function SignQuotePage() {
-  const { address, isConnected } = useAccount();
+  return (
+    <Suspense fallback={
+      <div className="flex items-center gap-2 py-20 justify-center">
+        <div className="h-1.5 w-1.5 rounded-full bg-zinc-600 animate-pulse" />
+        <p className="text-sm text-zinc-500">Loading...</p>
+      </div>
+    }>
+      <SignQuoteContent />
+    </Suspense>
+  );
+}
+
+function SignQuoteContent() {
+  const { address, isConnected } = useAuth();
   const { signTypedDataAsync } = useSignTypedData();
+  const searchParams = useSearchParams();
 
   const [requestId, setRequestId] = useState<Hex>("0x");
   const [borrower, setBorrower] = useState("");
@@ -93,6 +109,7 @@ export default function SignQuotePage() {
   const [quoteExpiry, setQuoteExpiry] = useState("");
   const [haircutBps, setHaircutBps] = useState("");
 
+  const [borrowRequestId, setBorrowRequestId] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "signing" | "posting" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [savedRequestId, setSavedRequestId] = useState("");
@@ -100,12 +117,30 @@ export default function SignQuotePage() {
   useEffect(() => {
     setRequestId(generateRequestId());
 
+    // Pre-fill from search params (coming from Market page)
+    if (searchParams.get("borrowRequestId")) setBorrowRequestId(searchParams.get("borrowRequestId")!);
+    if (searchParams.get("borrower")) setBorrower(searchParams.get("borrower")!);
+    if (searchParams.get("security")) setSecurity(searchParams.get("security")!);
+    if (searchParams.get("cash")) setCash(searchParams.get("cash")!);
+    if (searchParams.get("collateralQty")) setCollateralQty(searchParams.get("collateralQty")!);
+    if (searchParams.get("principal")) setPrincipal(searchParams.get("principal")!);
+    if (searchParams.get("haircutBps")) setHaircutBps(searchParams.get("haircutBps")!);
+
     const now = new Date();
     const oneHour = new Date(now.getTime() + 60 * 60 * 1000);
-    const oneDay = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    // If maturityDays is provided, calculate maturity date from now
+    const maturityDays = searchParams.get("maturityDays");
+    if (maturityDays) {
+      const mat = new Date(now.getTime() + Number(maturityDays) * 24 * 60 * 60 * 1000);
+      setMaturity(toDatetimeLocal(mat));
+    } else {
+      const oneDay = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      setMaturity(toDatetimeLocal(oneDay));
+    }
+
     setQuoteExpiry(toDatetimeLocal(oneHour));
-    setMaturity(toDatetimeLocal(oneDay));
-  }, []);
+  }, [searchParams]);
 
   if (!isConnected || !address) {
     return (
@@ -171,6 +206,7 @@ export default function SignQuotePage() {
           haircutBps: message.haircutBps.toString(),
         },
         signature,
+        borrowRequestId: borrowRequestId ? Number(borrowRequestId) : undefined,
       };
 
       const res = await fetch("/api/quotes", {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useAccount, useReadContract, useWaitForTransactionReceipt } from "wagmi";
+import { useReadContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAuth } from "@/hooks/useAuth";
 import { formatUnits, type Hex } from "viem";
 import { TENOR_SETTLEMENT_ABI, TENOR_SETTLEMENT_ADDRESS } from "@/abi";
 import { useRepayEarly } from "@/hooks/useTenor";
@@ -249,7 +250,7 @@ function RepoCard({
 // ── Dashboard Page ───────────────────────────────────────
 
 export default function DashboardPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useAuth();
   const [repos, setRepos] = useState<RepoFromEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
