@@ -37,6 +37,51 @@ interface Props {
   onComplete: () => void;
 }
 
+function getCacheKey(address: string) {
+  return `tenor:token-assoc:${address.toLowerCase()}`;
+}
+
+function isAssociationCached(address: string): boolean {
+  try {
+    return localStorage.getItem(getCacheKey(address)) === "done";
+  } catch {
+    return false;
+  }
+}
+
+function cacheAssociation(address: string) {
+  try {
+    localStorage.setItem(getCacheKey(address), "done");
+  } catch {}
+}
+
+function evmToEntityNum(evmAddress: string): number | null {
+  const hex = evmAddress.toLowerCase().replace("0x", "");
+  // Long-zero format: 0x000000000000000000000000000000000006xxxx
+  if (hex.length === 40 && hex.startsWith("000000000000000000000000")) {
+    return parseInt(hex.slice(24), 16);
+  }
+  return null;
+}
+
+async function getTokenEntityId(tokenAddress: string): Promise<string | null> {
+  // Try parsing long-zero address directly
+  const entityNum = evmToEntityNum(tokenAddress);
+  if (entityNum !== null) return `0.0.${entityNum}`;
+
+  // Full EVM address — look up via contracts endpoint
+  try {
+    const res = await fetch(
+      `https://testnet.mirrornode.hedera.com/api/v1/contracts/${tokenAddress}`
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.contract_id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function checkAssociation(address: string, tokenAddress: string): Promise<boolean> {
   try {
     const accRes = await fetch(
@@ -52,12 +97,8 @@ async function checkAssociation(address: string, tokenAddress: string): Promise<
     if (!tokRes.ok) return false;
     const tokData = await tokRes.json();
 
-    const tokenAccRes = await fetch(
-      `https://testnet.mirrornode.hedera.com/api/v1/accounts/${tokenAddress}`
-    );
-    if (!tokenAccRes.ok) return false;
-    const tokenAccData = await tokenAccRes.json();
-    const tokenId = tokenAccData.account as string;
+    const tokenId = await getTokenEntityId(tokenAddress);
+    if (!tokenId) return false;
 
     return (tokData.tokens ?? []).some(
       (t: { token_id: string }) => t.token_id === tokenId
@@ -88,6 +129,13 @@ export function TokenAssociationModal({ open, address, onComplete }: Props) {
   // Check which tokens need association
   useEffect(() => {
     if (!open || !address) return;
+
+    // Already associated in a previous session
+    if (isAssociationCached(address)) {
+      onComplete();
+      return;
+    }
+
     setChecking(true);
     setStatus("idle");
     setErrorMsg("");
@@ -103,6 +151,7 @@ export function TokenAssociationModal({ open, address, onComplete }: Props) {
       setMissing(needed);
       setChecking(false);
       if (needed.length === 0) {
+        cacheAssociation(address);
         onComplete();
       }
     });
@@ -112,16 +161,18 @@ export function TokenAssociationModal({ open, address, onComplete }: Props) {
   // Handle on-chain confirmation
   useEffect(() => {
     if (txConfirmed) {
+      cacheAssociation(address);
       setStatus("done");
       setTimeout(onComplete, 1500);
     }
-  }, [txConfirmed, onComplete]);
+  }, [txConfirmed, address, onComplete]);
 
   // Handle on-chain revert
   useEffect(() => {
     if (txReverted) {
       const msg = receiptError?.message ?? "Transaction reverted on-chain";
       if (msg.includes("TOKEN_ALREADY_ASSOCIATED") || msg.includes("already associated")) {
+        cacheAssociation(address);
         setStatus("done");
         setTimeout(onComplete, 1000);
       } else {
@@ -129,7 +180,7 @@ export function TokenAssociationModal({ open, address, onComplete }: Props) {
         setErrorMsg(msg.length > 200 ? msg.slice(0, 200) + "..." : msg);
       }
     }
-  }, [txReverted, receiptError, onComplete]);
+  }, [txReverted, receiptError, address, onComplete]);
 
   const handleAssociate = useCallback(async () => {
     setStatus("signing");
@@ -152,6 +203,7 @@ export function TokenAssociationModal({ open, address, onComplete }: Props) {
         setStatus("idle");
         setErrorMsg("Transaction was rejected. You can try again.");
       } else if (msg.includes("TOKEN_ALREADY_ASSOCIATED") || msg.includes("already associated")) {
+        cacheAssociation(address);
         setStatus("done");
         setTimeout(onComplete, 1000);
       } else {
