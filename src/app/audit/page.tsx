@@ -134,15 +134,21 @@ function AuditMessageCard({ content, sequenceNumber, timestamp }: { content: str
   );
 }
 
+const PAGE_SIZE = 10;
+
 export default function AuditPage() {
   const [messages, setMessages] = useState<HcsMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [input, setInput] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [publishResult, setPublishResult] = useState<{
     kind: "success" | "error";
     text: string;
   } | null>(null);
+
+  const totalPages = Math.max(1, Math.ceil(messages.length / PAGE_SIZE));
+  const paged = messages.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const fetchMessages = useCallback(() => {
     fetch("/api/hcs/messages")
@@ -242,16 +248,66 @@ export default function AuditPage() {
           <p className="text-sm text-zinc-500">No messages found.</p>
         </div>
       ) : (
-        <div className="pt-2">
-          {messages.map((msg) => (
-            <AuditMessageCard
-              key={msg.sequenceNumber}
-              content={msg.content}
-              sequenceNumber={msg.sequenceNumber}
-              timestamp={msg.timestamp}
-            />
-          ))}
-        </div>
+        <>
+          <div className="pt-2">
+            {paged.map((msg) => (
+              <AuditMessageCard
+                key={msg.sequenceNumber}
+                content={msg.content}
+                sequenceNumber={msg.sequenceNumber}
+                timestamp={msg.timestamp}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-xs text-zinc-600">
+                Page {page} of {totalPages} ({messages.length} messages)
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => p - 1)}
+                  disabled={page <= 1}
+                  className="rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 hover:border-zinc-700 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  Prev
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                  .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                    if (idx > 0 && p - arr[idx - 1] > 1) acc.push("...");
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((item, i) =>
+                    item === "..." ? (
+                      <span key={`dot-${i}`} className="px-1 text-zinc-600 text-sm">...</span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => setPage(item)}
+                        className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                          item === page
+                            ? "bg-zinc-800 text-white"
+                            : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    ),
+                  )}
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page >= totalPages}
+                  className="rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 hover:border-zinc-700 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
