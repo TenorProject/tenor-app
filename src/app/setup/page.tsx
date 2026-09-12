@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useAccount, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits, type Address, type Hex } from "viem";
+import { type Address, type Hex } from "viem";
 import { useErc20Allowance, useErc20Approve } from "@/hooks/useErc20";
 import { TENOR_SETTLEMENT_ADDRESS } from "@/abi";
-import { formatUnits } from "viem";
 
 const DEFAULT_USDC = (process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "") as string;
 const DEFAULT_SECURITY = (process.env.NEXT_PUBLIC_SECURITY_ADDRESS ?? "") as string;
@@ -45,7 +44,7 @@ function TxFeedback({ txHash, isPending, isError, error }: {
 
 function LenderSetup({ address }: { address: Address }) {
   const [usdcAddress, setUsdcAddress] = useState(DEFAULT_USDC);
-  const [amount, setAmount] = useState("1000000");
+  const [amount, setAmount] = useState("1000000000000");
 
   const token = usdcAddress.startsWith("0x") ? (usdcAddress as Address) : undefined;
 
@@ -54,8 +53,7 @@ function LenderSetup({ address }: { address: Address }) {
 
   function handleApprove() {
     if (!token) return;
-    const parsed = parseUnits(amount, 6);
-    approve(token, TENOR_SETTLEMENT_ADDRESS, parsed);
+    approve(token, TENOR_SETTLEMENT_ADDRESS, BigInt(amount));
   }
 
   return (
@@ -83,12 +81,12 @@ function LenderSetup({ address }: { address: Address }) {
         </label>
 
         <label className="block text-sm">
-          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Approval Amount (USDC)</span>
+          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Approval Amount (raw, 6 decimals)</span>
           <input
             type="text"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="1000000"
+            placeholder="1000000000000 = 1,000,000 USDC"
             className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
           />
         </label>
@@ -107,7 +105,7 @@ function LenderSetup({ address }: { address: Address }) {
           <div className="flex items-center gap-2 text-sm text-zinc-500">
             <span>Current allowance:</span>
             <span className="font-mono text-zinc-300">
-              {formatUnits(allowance, 6)} USDC
+              {allowance.toString()} (raw)
             </span>
           </div>
         )}
@@ -155,12 +153,12 @@ function BorrowerSetup({ address }: { address: Address }) {
         </label>
 
         <label className="block text-sm">
-          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Approval Amount (raw)</span>
+          <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Approval Amount (raw units)</span>
           <input
             type="text"
             value={approveAmount}
             onChange={(e) => setApproveAmount(e.target.value)}
-            placeholder="1000000"
+            placeholder="1000000 = 1 token (if 6 decimals)"
             className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
           />
         </label>

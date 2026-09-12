@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
-import { keccak256, toHex, parseUnits, type Address, type Hex } from "viem";
+import { keccak256, toHex, type Address, type Hex } from "viem";
 import { TENOR_SETTLEMENT_ADDRESS } from "@/abi";
 import { publishToHcs } from "@/lib/hcs";
 
@@ -139,8 +139,8 @@ export default function SignQuotePage() {
         partition: partition as Hex,
         collateralQty: BigInt(collateralQty),
         cash: cash as Address,
-        principal: parseUnits(principal, 6),
-        repurchase: parseUnits(repurchase, 6),
+        principal: BigInt(principal),
+        repurchase: BigInt(repurchase),
         maturity: maturityUnix,
         quoteExpiry: expiryUnix,
         haircutBps: BigInt(haircutBps),
@@ -233,8 +233,8 @@ export default function SignQuotePage() {
             <InputField label="Haircut (bps, e.g. 500 = 5%)" value={haircutBps} onChange={setHaircutBps} placeholder="500" />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Principal (USDC)" value={principal} onChange={setPrincipal} placeholder="10000" />
-            <InputField label="Repurchase (USDC)" value={repurchase} onChange={setRepurchase} placeholder="10050" />
+            <InputField label="Principal (raw, 6 decimals)" value={principal} onChange={setPrincipal} placeholder="10000000000 = 10,000 USDC" />
+            <InputField label="Repurchase (raw, 6 decimals)" value={repurchase} onChange={setRepurchase} placeholder="10500000000 = 10,500 USDC" />
           </div>
         </div>
 
