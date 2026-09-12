@@ -14,6 +14,7 @@ export function ConnectButton() {
   const { address } = useAccount();
   const { data: balance } = useBalance({ address });
   const [open, setOpen] = useState(false);
+  const [hederaAccountId, setHederaAccountId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   // Always set the Privy embedded wallet as active for wagmi
@@ -23,6 +24,19 @@ export function ConnectButton() {
       setActiveWallet(embeddedWallet);
     }
   }, [embeddedWallet, address, setActiveWallet]);
+
+  // Fetch Hedera Account ID from mirror node
+  const activeAddress = embeddedWallet?.address ?? address;
+  useEffect(() => {
+    if (!activeAddress) return;
+    setHederaAccountId(null);
+    fetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${activeAddress}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.account) setHederaAccountId(data.account);
+      })
+      .catch(() => {});
+  }, [activeAddress]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -37,8 +51,7 @@ export function ConnectButton() {
   if (!ready) return null;
 
   if (authenticated && address) {
-    const activeAddress = embeddedWallet?.address ?? address;
-    const truncated = `${activeAddress.slice(0, 6)}...${activeAddress.slice(-4)}`;
+    const truncated = `${(activeAddress ?? address).slice(0, 6)}...${(activeAddress ?? address).slice(-4)}`;
     const bal = balance
       ? `${parseFloat(formatUnits(balance.value, balance.decimals)).toFixed(2)} ${balance.symbol}`
       : "";
@@ -59,7 +72,10 @@ export function ConnectButton() {
         {open && (
           <div className="absolute right-0 mt-2 w-56 rounded-lg border border-zinc-800 bg-zinc-900 p-1 shadow-xl z-50">
             <div className="px-3 py-2 text-xs text-zinc-500 font-mono truncate border-b border-zinc-800 mb-1">
-              {activeAddress}
+              <div className="truncate">{activeAddress ?? address}</div>
+              {hederaAccountId && (
+                <div className="text-zinc-400 mt-0.5">{hederaAccountId}</div>
+              )}
             </div>
             {embeddedWallet && (
               <button
