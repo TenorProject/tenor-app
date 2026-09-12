@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAuth } from "@/hooks/useAuth";
 import type { Address, Hex } from "viem";
 
 const DEFAULT_SECURITY = (process.env.NEXT_PUBLIC_SECURITY_ADDRESS ?? "") as string;
@@ -28,7 +29,7 @@ type Result =
   | { kind: "succeeded" };
 
 export default function ComplianceTestPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useAuth();
   const [securityAddress, setSecurityAddress] = useState(DEFAULT_SECURITY);
   const [target, setTarget] = useState("");
   const [amount, setAmount] = useState("1");

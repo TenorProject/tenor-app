@@ -78,9 +78,16 @@ export function ConnectButton() {
   return (
     <button
       onClick={login}
-      className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-zinc-200 transition-all"
+      className="group relative rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:scale-[1.02] active:scale-[0.98]"
     >
-      Login
+      <span className="flex items-center gap-2">
+        <svg viewBox="0 0 24 24" className="h-4 w-4 opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+          <polyline points="10 17 15 12 10 7" />
+          <line x1="15" y1="12" x2="3" y2="12" />
+        </svg>
+        Sign In
+      </span>
     </button>
   );
 }

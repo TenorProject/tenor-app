@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccount, useSignTypedData } from "wagmi";
+import { useSignTypedData } from "wagmi";
+import { useAuth } from "@/hooks/useAuth";
 import { keccak256, toHex, type Address, type Hex } from "viem";
 import { TENOR_SETTLEMENT_ADDRESS } from "@/abi";
 import { publishToHcs } from "@/lib/hcs";
@@ -76,7 +77,7 @@ function InputField({
 }
 
 export default function SignQuotePage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useAuth();
   const { signTypedDataAsync } = useSignTypedData();
 
   const [requestId, setRequestId] = useState<Hex>("0x");
