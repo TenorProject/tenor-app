@@ -96,6 +96,7 @@ export default function SignQuotePage() {
   const [quoteExpiry, setQuoteExpiry] = useState("");
   const [haircutBps, setHaircutBps] = useState("");
 
+  const [borrowRequestId, setBorrowRequestId] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "signing" | "posting" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [savedRequestId, setSavedRequestId] = useState("");
@@ -104,6 +105,7 @@ export default function SignQuotePage() {
     setRequestId(generateRequestId());
 
     // Pre-fill from search params (coming from Market page)
+    if (searchParams.get("borrowRequestId")) setBorrowRequestId(searchParams.get("borrowRequestId")!);
     if (searchParams.get("borrower")) setBorrower(searchParams.get("borrower")!);
     if (searchParams.get("security")) setSecurity(searchParams.get("security")!);
     if (searchParams.get("cash")) setCash(searchParams.get("cash")!);
@@ -191,6 +193,7 @@ export default function SignQuotePage() {
           haircutBps: message.haircutBps.toString(),
         },
         signature,
+        borrowRequestId: borrowRequestId ? Number(borrowRequestId) : undefined,
       };
 
       const res = await fetch("/api/quotes", {

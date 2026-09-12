@@ -6,6 +6,7 @@ import { useAccount, useBalance } from "wagmi";
 import { formatUnits } from "viem";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { KeyConverterModal } from "./KeyConverterModal";
+import { ProfileModal } from "./ProfileModal";
 
 export function ConnectButton() {
   const { ready, authenticated, login, logout, user } = usePrivy();
@@ -16,8 +17,10 @@ export function ConnectButton() {
   const { data: balance } = useBalance({ address });
   const [open, setOpen] = useState(false);
   const [converterOpen, setConverterOpen] = useState(false);
+  const [needsProfile, setNeedsProfile] = useState(false);
   const [hederaAccountId, setHederaAccountId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const profileCheckedRef = useRef<string | null>(null);
   const closeConverter = useCallback(() => setConverterOpen(false), []);
 
   // Always set the Privy embedded wallet as active for wagmi
@@ -40,6 +43,24 @@ export function ConnectButton() {
       })
       .catch(() => {});
   }, [activeAddress]);
+
+  // Check if user needs to complete profile after login
+  useEffect(() => {
+    if (!authenticated || !activeAddress) {
+      setNeedsProfile(false);
+      profileCheckedRef.current = null;
+      return;
+    }
+    if (profileCheckedRef.current === activeAddress.toLowerCase()) return;
+
+    fetch(`/api/profile?address=${activeAddress}`)
+      .then((r) => r.json())
+      .then((data) => {
+        profileCheckedRef.current = activeAddress.toLowerCase();
+        setNeedsProfile(data === null);
+      })
+      .catch(() => setNeedsProfile(true));
+  }, [authenticated, activeAddress]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -116,6 +137,14 @@ export function ConnectButton() {
           )}
         </div>
         <KeyConverterModal open={converterOpen} onClose={closeConverter} />
+        <ProfileModal
+          open={needsProfile}
+          address={activeAddress ?? address}
+          onComplete={() => {
+            setNeedsProfile(false);
+            if (activeAddress) profileCheckedRef.current = activeAddress.toLowerCase();
+          }}
+        />
       </>
     );
   }
