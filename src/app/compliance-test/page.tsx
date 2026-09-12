@@ -122,12 +122,12 @@ export default function ComplianceTestPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <label className="block text-sm">
-            <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Amount</span>
+            <span className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">Amount (raw units)</span>
             <input
               type="text"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="1"
+              placeholder="1000000 = 1 token (if 6 decimals)"
               className="block w-full rounded-md border border-zinc-700 bg-zinc-800/60 px-3 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none hover:border-zinc-600 transition-colors"
             />
           </label>
