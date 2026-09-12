@@ -1,6 +1,6 @@
 "use client";
 
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { usePrivy, useWallets, useExportWallet } from "@privy-io/react-auth";
 import { useSetActiveWallet } from "@privy-io/wagmi";
 import { useAccount, useBalance } from "wagmi";
 import { formatUnits } from "viem";
@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from "react";
 
 export function ConnectButton() {
   const { ready, authenticated, login, logout, user } = usePrivy();
+  const { exportWallet } = useExportWallet();
   const { wallets } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
   const { address } = useAccount();
@@ -60,6 +61,17 @@ export function ConnectButton() {
             <div className="px-3 py-2 text-xs text-zinc-500 font-mono truncate border-b border-zinc-800 mb-1">
               {activeAddress}
             </div>
+            {embeddedWallet && (
+              <button
+                onClick={() => {
+                  exportWallet();
+                  setOpen(false);
+                }}
+                className="w-full rounded-md px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+              >
+                Export Private Key
+              </button>
+            )}
             <button
               onClick={() => {
                 logout();
