@@ -4,7 +4,8 @@ import { usePrivy, useWallets, useExportWallet } from "@privy-io/react-auth";
 import { useSetActiveWallet } from "@privy-io/wagmi";
 import { useAccount, useBalance } from "wagmi";
 import { formatUnits } from "viem";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { KeyConverterModal } from "./KeyConverterModal";
 
 export function ConnectButton() {
   const { ready, authenticated, login, logout, user } = usePrivy();
@@ -14,8 +15,10 @@ export function ConnectButton() {
   const { address } = useAccount();
   const { data: balance } = useBalance({ address });
   const [open, setOpen] = useState(false);
+  const [converterOpen, setConverterOpen] = useState(false);
   const [hederaAccountId, setHederaAccountId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const closeConverter = useCallback(() => setConverterOpen(false), []);
 
   // Always set the Privy embedded wallet as active for wagmi
   const embeddedWallet = wallets.find((w) => w.walletClientType === "privy");
@@ -59,47 +62,61 @@ export function ConnectButton() {
     const label = user?.google?.email ?? user?.email?.address ?? truncated;
 
     return (
-      <div className="relative" ref={ref}>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-300 hover:border-zinc-700 hover:text-white transition-colors"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          <span className="text-xs truncate max-w-[140px]">{label}</span>
-          {bal && <span className="text-zinc-500 text-xs">({bal})</span>}
-        </button>
+      <>
+        <div className="relative" ref={ref}>
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-300 hover:border-zinc-700 hover:text-white transition-colors"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="text-xs truncate max-w-[140px]">{label}</span>
+            {bal && <span className="text-zinc-500 text-xs">({bal})</span>}
+          </button>
 
-        {open && (
-          <div className="absolute right-0 mt-2 w-56 rounded-lg border border-zinc-800 bg-zinc-900 p-1 shadow-xl z-50">
-            <div className="px-3 py-2 text-xs text-zinc-500 font-mono truncate border-b border-zinc-800 mb-1">
-              <div className="truncate">{activeAddress ?? address}</div>
-              {hederaAccountId && (
-                <div className="text-zinc-400 mt-0.5">{hederaAccountId}</div>
+          {open && (
+            <div className="absolute right-0 mt-2 w-56 rounded-lg border border-zinc-800 bg-zinc-900 p-1 shadow-xl z-50">
+              <div className="px-3 py-2 text-xs text-zinc-500 font-mono truncate border-b border-zinc-800 mb-1">
+                <div className="truncate">{activeAddress ?? address}</div>
+                {hederaAccountId && (
+                  <div className="text-zinc-400 mt-0.5">{hederaAccountId}</div>
+                )}
+              </div>
+              {embeddedWallet && (
+                <>
+                  <button
+                    onClick={() => {
+                      exportWallet();
+                      setOpen(false);
+                    }}
+                    className="w-full rounded-md px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+                  >
+                    Export Private Key
+                  </button>
+                  <button
+                    onClick={() => {
+                      setConverterOpen(true);
+                      setOpen(false);
+                    }}
+                    className="w-full rounded-md px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+                  >
+                    Convert Key to Hedera Format
+                  </button>
+                </>
               )}
-            </div>
-            {embeddedWallet && (
               <button
                 onClick={() => {
-                  exportWallet();
+                  logout();
                   setOpen(false);
                 }}
-                className="w-full rounded-md px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+                className="w-full rounded-md px-3 py-2 text-left text-sm text-red-400 hover:bg-zinc-800 transition-colors"
               >
-                Export Private Key
+                Logout
               </button>
-            )}
-            <button
-              onClick={() => {
-                logout();
-                setOpen(false);
-              }}
-              className="w-full rounded-md px-3 py-2 text-left text-sm text-red-400 hover:bg-zinc-800 transition-colors"
-            >
-              Logout
-            </button>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+        <KeyConverterModal open={converterOpen} onClose={closeConverter} />
+      </>
     );
   }
 
