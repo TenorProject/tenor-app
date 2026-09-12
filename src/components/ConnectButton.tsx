@@ -7,6 +7,7 @@ import { formatUnits } from "viem";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { KeyConverterModal } from "./KeyConverterModal";
 import { ProfileModal } from "./ProfileModal";
+import { TokenAssociationModal } from "./TokenAssociationModal";
 
 export function ConnectButton() {
   const { ready, authenticated, login, logout, user } = usePrivy();
@@ -18,6 +19,7 @@ export function ConnectButton() {
   const [open, setOpen] = useState(false);
   const [converterOpen, setConverterOpen] = useState(false);
   const [needsProfile, setNeedsProfile] = useState(false);
+  const [needsAssociation, setNeedsAssociation] = useState(false);
   const [hederaAccountId, setHederaAccountId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const profileCheckedRef = useRef<string | null>(null);
@@ -57,7 +59,12 @@ export function ConnectButton() {
       .then((r) => r.json())
       .then((data) => {
         profileCheckedRef.current = activeAddress.toLowerCase();
-        setNeedsProfile(data === null);
+        if (data === null) {
+          setNeedsProfile(true);
+        } else {
+          setNeedsProfile(false);
+          setNeedsAssociation(true);
+        }
       })
       .catch(() => setNeedsProfile(true));
   }, [authenticated, activeAddress]);
@@ -143,7 +150,13 @@ export function ConnectButton() {
           onComplete={() => {
             setNeedsProfile(false);
             if (activeAddress) profileCheckedRef.current = activeAddress.toLowerCase();
+            setNeedsAssociation(true);
           }}
+        />
+        <TokenAssociationModal
+          open={needsAssociation && !needsProfile}
+          address={(activeAddress ?? address) as `0x${string}`}
+          onComplete={() => setNeedsAssociation(false)}
         />
       </>
     );
