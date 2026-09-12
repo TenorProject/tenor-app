@@ -33,7 +33,9 @@ async function fetchFromMirrorNode(
 ): Promise<RepoFromEvent[]> {
   if (!CONTRACT_ADDRESS) return [];
 
-  const url = `https://testnet.mirrornode.hedera.com/api/v1/contracts/${CONTRACT_ADDRESS}/results/logs?topic0=${REPO_OPENED_TOPIC}&limit=100`;
+  // Hedera mirror node requires a ≤7-day timestamp range when filtering by
+  // topic, so we fetch all contract logs and filter by topic0 in code.
+  const url = `https://testnet.mirrornode.hedera.com/api/v1/contracts/${CONTRACT_ADDRESS}/results/logs?limit=100&order=desc`;
 
   const res = await fetch(url, { next: { revalidate: 10 } });
   if (!res.ok) return [];
@@ -43,6 +45,7 @@ async function fetchFromMirrorNode(
 
   for (const log of body.logs ?? []) {
     if (log.topics.length < 4) continue;
+    if (log.topics[0] !== REPO_OPENED_TOPIC) continue;
 
     const id = log.topics[1];
     const lender = ("0x" + log.topics[2].slice(26)) as Address;

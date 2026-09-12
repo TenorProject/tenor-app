@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useAccount, useWaitForTransactionReceipt } from "wagmi";
+import { useWaitForTransactionReceipt } from "wagmi";
+import { useAuth } from "@/hooks/useAuth";
 import { formatUnits, type Address, type Hex } from "viem";
 import { useOpenRepo } from "@/hooks/useTenor";
 import { publishToHcs } from "@/lib/hcs";
@@ -191,7 +192,7 @@ function decodeErrorName(error: Error | null): string {
 }
 
 export default function OpenRepoPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useAuth();
   const [quotes, setQuotes] = useState<SignedQuote[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeRequestId, setActiveRequestId] = useState<string | null>(null);

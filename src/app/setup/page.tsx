@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useWaitForTransactionReceipt } from "wagmi";
+import { useWaitForTransactionReceipt } from "wagmi";
+import { useAuth } from "@/hooks/useAuth";
 import { type Address, type Hex } from "viem";
 import { useErc20Allowance, useErc20Approve } from "@/hooks/useErc20";
 import { TENOR_SETTLEMENT_ADDRESS } from "@/abi";
@@ -185,7 +186,7 @@ function BorrowerSetup({ address }: { address: Address }) {
 }
 
 export default function SetupPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useAuth();
 
   if (!isConnected || !address) {
     return (
