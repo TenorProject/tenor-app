@@ -28,9 +28,9 @@ function formatMaturity(unix: string) {
 }
 
 const EVENT_COLORS: Record<string, { border: string; bg: string; badge: string; badgeText: string; dot: string }> = {
-  QuoteSigned: { border: "border-blue-500/15", bg: "bg-blue-500/5", badge: "bg-blue-500/10", badgeText: "text-blue-400", dot: "bg-blue-400" },
-  RepoOpened: { border: "border-emerald-500/15", bg: "bg-emerald-500/5", badge: "bg-emerald-500/10", badgeText: "text-emerald-400", dot: "bg-emerald-400" },
-  RepoRepaidEarly: { border: "border-yellow-500/15", bg: "bg-yellow-500/5", badge: "bg-yellow-500/10", badgeText: "text-yellow-400", dot: "bg-yellow-400" },
+  QuoteSigned: { border: "border-blue-900/30", bg: "bg-blue-950/20", badge: "bg-blue-950/40", badgeText: "text-blue-200", dot: "bg-blue-500/50" },
+  RepoOpened: { border: "border-emerald-900/30", bg: "bg-emerald-950/20", badge: "bg-emerald-950/40", badgeText: "text-emerald-200", dot: "bg-emerald-500/50" },
+  RepoRepaidEarly: { border: "border-yellow-900/30", bg: "bg-yellow-950/20", badge: "bg-yellow-950/40", badgeText: "text-yellow-200", dot: "bg-yellow-500/50" },
 };
 
 const DEFAULT_COLORS = { border: "border-zinc-800/60", bg: "bg-zinc-900/30", badge: "bg-zinc-800", badgeText: "text-zinc-400", dot: "bg-zinc-500" };
@@ -83,7 +83,7 @@ function AuditMessageCard({ content, sequenceNumber, timestamp }: { content: str
       </div>
       <div className={`flex-1 rounded-xl border ${colors.border} ${colors.bg} px-4 py-3 mb-3`}>
         <div className="flex items-center justify-between">
-          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.badge} ${colors.badgeText}`}>
+          <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${colors.badge} ${colors.badgeText}`}>
             {parsed.event}
           </span>
           <div className="flex items-center gap-3 text-xs text-zinc-600">

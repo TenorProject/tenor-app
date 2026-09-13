@@ -85,10 +85,22 @@ export function ConnectButton() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
+  const [copied, setCopied] = useState(false);
+
+  function handleCopyAddress() {
+    const addr = activeAddress ?? address;
+    if (!addr) return;
+    navigator.clipboard.writeText(addr).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
+
   if (!ready) return null;
 
   if (authenticated && address) {
-    const truncated = `${(activeAddress ?? address).slice(0, 6)}...${(activeAddress ?? address).slice(-4)}`;
+    const addr = activeAddress ?? address;
+    const truncated = `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     const bal = balance
       ? `${parseFloat(formatUnits(balance.value, balance.decimals)).toFixed(2)} ${balance.symbol}`
       : "";
@@ -102,19 +114,24 @@ export function ConnectButton() {
             onClick={() => setOpen((o) => !o)}
             className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-300 hover:border-zinc-700 hover:text-white transition-colors"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             <span className="text-xs truncate max-w-[140px]">{label}</span>
             {bal && <span className="text-zinc-500 text-xs">({bal})</span>}
           </button>
 
           {open && (
             <div className="absolute right-0 mt-2 w-56 rounded-lg border border-zinc-800 bg-zinc-900 p-1 shadow-xl z-50">
-              <div className="px-3 py-2 text-xs text-zinc-500 font-mono truncate border-b border-zinc-800 mb-1">
-                <div className="truncate">{activeAddress ?? address}</div>
+              <button
+                onClick={handleCopyAddress}
+                className="w-full px-3 py-2 text-left border-b border-zinc-800 mb-1 hover:bg-zinc-800/50 transition-colors rounded-t-md"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-zinc-400 font-mono">{truncated}</span>
+                  <span className="text-[10px] text-zinc-600">{copied ? "Copied" : "Copy"}</span>
+                </div>
                 {hederaAccountId && (
-                  <div className="text-zinc-400 mt-0.5">{hederaAccountId}</div>
+                  <div className="text-xs text-zinc-500 mt-0.5">{hederaAccountId}</div>
                 )}
-              </div>
+              </button>
               {embeddedWallet && (
                 <>
                   <button

@@ -92,10 +92,23 @@ export default function ComplianceTestPage() {
       <div>
         <h1 className="text-2xl font-bold text-white">Compliance Test</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Attempt to transfer a security token to an address that is{" "}
-          <span className="text-zinc-300 font-medium">not</span> in the identity registry.
-          The token itself will reject the transfer.
+          Verify that ATS transfer restrictions are enforced at the smart contract level.
         </p>
+      </div>
+
+      <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/30 p-5 space-y-3">
+        <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wide">How it works</h2>
+        <ol className="list-decimal list-inside space-y-1.5 text-sm text-zinc-400">
+          <li>Enter the security token contract address (pre-filled from your environment).</li>
+          <li>Enter a target address that is <span className="text-zinc-300 font-medium">not</span> registered in the on-chain identity registry.</li>
+          <li>Click <span className="text-zinc-300 font-medium">Test Transfer</span> to attempt a <code className="text-xs bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-300">transferByPartition</code> call.</li>
+          <li>The contract should <span className="text-zinc-300 font-medium">revert</span> the transaction, proving compliance is enforced.</li>
+        </ol>
+        <div className="border-t border-zinc-800/40 pt-3">
+          <p className="text-xs text-zinc-500">
+            If the transfer succeeds, it means the identity registry is not configured correctly or the target address is already whitelisted. A successful transfer is flagged as a compliance failure.
+          </p>
+        </div>
       </div>
 
       <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/30 p-6 sm:p-8 space-y-5">
