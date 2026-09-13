@@ -46,10 +46,16 @@ export function ConnectButton() {
       .catch(() => {});
   }, [activeAddress]);
 
+  // Reset association state when address changes
+  useEffect(() => {
+    setNeedsAssociation(false);
+  }, [activeAddress]);
+
   // Check if user needs to complete profile after login
   useEffect(() => {
     if (!authenticated || !activeAddress) {
       setNeedsProfile(false);
+      setNeedsAssociation(false);
       profileCheckedRef.current = null;
       return;
     }
